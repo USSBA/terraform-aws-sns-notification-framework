@@ -1,0 +1,75 @@
+# SNS Topics
+resource "aws_sns_topic" "green" {
+  name = "${var.name_prefix}-green"
+}
+resource "aws_sns_topic" "yellow" {
+  name = "${var.name_prefix}-yellow"
+}
+resource "aws_sns_topic" "red" {
+  name = "${var.name_prefix}-red"
+}
+resource "aws_sns_topic" "security" {
+  name = "${var.name_prefix}-security"
+}
+resource "aws_sns_topic" "email_admins" {
+  name = "${var.name_prefix}-email-admins"
+  # After this resource is created, go to AWS Console and subscribe the following email addresses
+  #    https://console.aws.amazon.com/sns/v3/home?region=us-east-1#/topics
+  # - #TODO: addresses TBD
+}
+
+# This comes from a public terraform module:  https://registry.terraform.io/modules/terraform-aws-modules/notify-slack/aws/2.0.0
+module "notify_slack_green" {
+  source  = "terraform-aws-modules/notify-slack/aws"
+  version = "2.0.0"
+  # insert the 4 required variables here
+  slack_channel        = "aws_management_info"
+  slack_username       = "AWS Green SNS"
+  slack_webhook_url    = "https://hooks.slack.com/services/${var.slack_webhook_key}"
+  sns_topic_name       = aws_sns_topic.green.name
+  create_sns_topic     = false
+  slack_emoji          = ":information_source:"
+  lambda_function_name = "${var.name_prefix}-notify-slack-green"
+}
+
+# This comes from a public terraform module:  https://registry.terraform.io/modules/terraform-aws-modules/notify-slack/aws/2.0.0
+module "notify_slack_yellow" {
+  source  = "terraform-aws-modules/notify-slack/aws"
+  version = "2.0.0"
+  # insert the 4 required variables here
+  slack_channel        = "aws_management_info"
+  slack_username       = "AWS Yellow SNS"
+  slack_webhook_url    = "https://hooks.slack.com/services/${var.slack_webhook_key}"
+  sns_topic_name       = aws_sns_topic.yellow.name
+  create_sns_topic     = false
+  slack_emoji          = ":warning:"
+  lambda_function_name = "${var.name_prefix}-notify-slack-yellow"
+}
+
+# This comes from a public terraform module:  https://registry.terraform.io/modules/terraform-aws-modules/notify-slack/aws/2.0.0
+module "notify_slack_red" {
+  source  = "terraform-aws-modules/notify-slack/aws"
+  version = "2.0.0"
+  # insert the 4 required variables here
+  slack_channel        = length(var.slack_channel_red_override) > 0 ? var.slack_channel_red_override : var.slack_channel_default #"aws_management_error"
+  slack_username       = "AWS Red SNS"
+  slack_webhook_url    = "https://hooks.slack.com/services/${var.slack_webhook_key}"
+  sns_topic_name       = aws_sns_topic.red.name
+  create_sns_topic     = false
+  slack_emoji          = ":alert:"
+  lambda_function_name = "${var.name_prefix}-notify-slack-red"
+}
+
+# This comes from a public terraform module:  https://registry.terraform.io/modules/terraform-aws-modules/notify-slack/aws/2.0.0
+module "notify_slack_security" {
+  source  = "terraform-aws-modules/notify-slack/aws"
+  version = "2.0.0"
+  # insert the 4 required variables here
+  slack_channel        = "aws_management_info"
+  slack_username       = "AWS Security SNS"
+  slack_webhook_url    = "https://hooks.slack.com/services/${var.slack_webhook_key}"
+  sns_topic_name       = aws_sns_topic.security.name
+  create_sns_topic     = false
+  slack_emoji          = ":lock:"
+  lambda_function_name = "${var.name_prefix}-notify-slack-security"
+}
