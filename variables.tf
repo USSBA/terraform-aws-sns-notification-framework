@@ -31,3 +31,8 @@ variable "slack_channel_security_override" {
   default     = ""
   description = "Optional.  Override channel for security messages"
 }
+variable "enabled" {
+  type        = bool
+  default     = true
+  description = "Optional.  Disable the entire module by passing false to this"
+}
