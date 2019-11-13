@@ -32,7 +32,7 @@ module "notify_slack_green" {
   source  = "terraform-aws-modules/notify-slack/aws"
   version = "2.0.0"
   # insert the 4 required variables here
-  slack_channel        = "aws_management_info"
+  slack_channel        = length(var.slack_channel_green_override) > 0 ? var.slack_channel_green_override : var.slack_channel_default
   slack_username       = "AWS Green SNS"
   slack_webhook_url    = "https://hooks.slack.com/services/${var.slack_webhook_key}"
   sns_topic_name       = var.enabled ? aws_sns_topic.green[0].name : ""
@@ -47,7 +47,7 @@ module "notify_slack_yellow" {
   source  = "terraform-aws-modules/notify-slack/aws"
   version = "2.0.0"
   # insert the 4 required variables here
-  slack_channel        = "aws_management_info"
+  slack_channel        = length(var.slack_channel_yellow_override) > 0 ? var.slack_channel_yellow_override : var.slack_channel_default
   slack_username       = "AWS Yellow SNS"
   slack_webhook_url    = "https://hooks.slack.com/services/${var.slack_webhook_key}"
   sns_topic_name       = var.enabled ? aws_sns_topic.yellow[0].name : ""
@@ -62,7 +62,7 @@ module "notify_slack_red" {
   source  = "terraform-aws-modules/notify-slack/aws"
   version = "2.0.0"
   # insert the 4 required variables here
-  slack_channel        = length(var.slack_channel_red_override) > 0 ? var.slack_channel_red_override : var.slack_channel_default #"aws_management_error"
+  slack_channel        = length(var.slack_channel_red_override) > 0 ? var.slack_channel_red_override : var.slack_channel_default
   slack_username       = "AWS Red SNS"
   slack_webhook_url    = "https://hooks.slack.com/services/${var.slack_webhook_key}"
   sns_topic_name       = var.enabled ? aws_sns_topic.red[0].name : ""
@@ -77,7 +77,7 @@ module "notify_slack_security" {
   source  = "terraform-aws-modules/notify-slack/aws"
   version = "2.0.0"
   # insert the 4 required variables here
-  slack_channel        = "aws_management_info"
+  slack_channel        = length(var.slack_channel_security_override) > 0 ? var.slack_channel_security_override : var.slack_channel_default
   slack_username       = "AWS Security SNS"
   slack_webhook_url    = "https://hooks.slack.com/services/${var.slack_webhook_key}"
   sns_topic_name       = var.enabled ? aws_sns_topic.security[0].name : ""
