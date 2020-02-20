@@ -1,3 +1,7 @@
+# v1.2.0
+
+- FEATURE: Adding outputs for lambda arns
+
 # v1.1.1
 
 - BUG: Fix bug with override channels not being used properly
