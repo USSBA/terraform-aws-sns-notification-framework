@@ -19,6 +19,10 @@ Please follow this guidelines in all interactions:
 1. Be Respectful: use welcoming and inclusive language.
 2. Assume best intentions: seek to understand other's opinions.
 
+### Terraform 0.12
+
+Our code base now exists in Terraform 0.13 and we are halting new features in the Terraform 0.12 major version.  If you wish to make a PR or merge upstream changes back into 0.12, please submit a PR to the `terraform-0.12` branch.
+
 ## License
 
 terraform-aws-sns-notification-framework is licensed under the Creative Commons Zero license
