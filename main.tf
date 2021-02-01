@@ -1,91 +1,71 @@
-locals {
-  enabled_count = var.enabled ? 1 : 0
-}
 # SNS Topics
-resource "aws_sns_topic" "green" {
-  count = local.enabled_count
-  name  = "${var.name_prefix}-green"
+locals {
+  channel_config = {
+    green = {
+      slack_channel     = try(var.green_overrides.slack_channel, var.default_slack_channel)
+      slack_webhook_url = try(var.green_overrides.slack_webhook_url, var.default_slack_webhook_url)
+      slack_emoji       = try(var.green_overrides.slack_emoji, var.default_slack_emoji)
+      slack_username    = try(var.green_overrides.slack_username, "${var.default_slack_username} Green")
+      teams_webhook_url = try(var.green_overrides.teams_webhook_url, var.default_teams_webhook_url)
+    }
+    yellow = {
+      slack_channel     = try(var.yellow_overrides.slack_channel, var.default_slack_channel)
+      slack_webhook_url = try(var.yellow_overrides.slack_webhook_url, var.default_slack_webhook_url)
+      slack_emoji       = try(var.yellow_overrides.slack_emoji, var.default_slack_emoji)
+      slack_username    = try(var.yellow_overrides.slack_username, "${var.default_slack_username} Yellow")
+      teams_webhook_url = try(var.yellow_overrides.teams_webhook_url, var.default_teams_webhook_url)
+    }
+    red = {
+      slack_channel     = try(var.red_overrides.slack_channel, var.default_slack_channel)
+      slack_webhook_url = try(var.red_overrides.slack_webhook_url, var.default_slack_webhook_url)
+      slack_emoji       = try(var.red_overrides.slack_emoji, var.default_slack_emoji)
+      slack_username    = try(var.red_overrides.slack_username, "${var.default_slack_username} Red")
+      teams_webhook_url = try(var.red_overrides.teams_webhook_url, var.default_teams_webhook_url)
+    }
+    security = {
+      slack_channel     = try(var.security_overrides.slack_channel, var.default_slack_channel)
+      slack_webhook_url = try(var.security_overrides.slack_webhook_url, var.default_slack_webhook_url)
+      slack_emoji       = try(var.security_overrides.slack_emoji, var.default_slack_emoji)
+      slack_username    = try(var.security_overrides.slack_username, "${var.default_slack_username} Security")
+      teams_webhook_url = try(var.security_overrides.teams_webhook_url, var.default_teams_webhook_url)
+    }
+  }
 }
-resource "aws_sns_topic" "yellow" {
-  count = local.enabled_count
-  name  = "${var.name_prefix}-yellow"
+resource "aws_sns_topic" "topics" {
+  for_each = local.channel_config
+  name     = "${var.name_prefix}-${each.key}"
 }
-resource "aws_sns_topic" "red" {
-  count = local.enabled_count
-  name  = "${var.name_prefix}-red"
-}
-resource "aws_sns_topic" "security" {
-  count = local.enabled_count
-  name  = "${var.name_prefix}-security"
-}
+
 resource "aws_sns_topic" "email_admins" {
-  count = local.enabled_count
-  name  = "${var.name_prefix}-email-admins"
+  name = "${var.name_prefix}-email-admins"
   # After this resource is created, go to AWS Console and subscribe the following email addresses
   #    https://console.aws.amazon.com/sns/v3/home?region=us-east-1#/topics
   # - #TODO: addresses TBD
 }
 
-# This comes from a public terraform module:  https://registry.terraform.io/modules/terraform-aws-modules/notify-slack/aws/2.0.0
-module "notify_slack_green" {
-  create  = var.enabled
-  source  = "terraform-aws-modules/notify-slack/aws"
-  version = "~> 4.5"
-  # insert the 4 required variables here
-  slack_channel                          = length(var.slack_channel_green_override) > 0 ? var.slack_channel_green_override : var.slack_channel_default
-  slack_username                         = "AWS Green SNS"
-  slack_webhook_url                      = "https://hooks.slack.com/services/${var.slack_webhook_key}"
-  sns_topic_name                         = var.enabled ? aws_sns_topic.green[0].name : ""
+## This comes from a public terraform module:  https://registry.terraform.io/modules/terraform-aws-modules/notify-slack/aws/2.0.0
+module "notify_slack" {
+  # Create a map that contains only the ["color"] that are configured with a non-empty slack_webhook_url
+  for_each = { for name, config in local.channel_config : name => config if config.slack_webhook_url != "" }
+  source   = "terraform-aws-modules/notify-slack/aws"
+  version  = "~> 4.11"
+
+  slack_channel                          = each.value.slack_channel
+  slack_username                         = each.value.slack_username
+  slack_webhook_url                      = each.value.slack_webhook_url
+  slack_emoji                            = each.value.slack_emoji
+  sns_topic_name                         = aws_sns_topic.topics[each.key].name
   create_sns_topic                       = false
-  slack_emoji                            = ":information_source:"
-  lambda_function_name                   = "${var.name_prefix}-notify-slack-green"
+  lambda_function_name                   = "${var.name_prefix}-notify-slack-${each.key}"
   cloudwatch_log_group_retention_in_days = var.cloudwatch_log_group_retention_in_days
 }
 
-# This comes from a public terraform module:  https://registry.terraform.io/modules/terraform-aws-modules/notify-slack/aws/2.0.0
-module "notify_slack_yellow" {
-  create  = var.enabled
-  source  = "terraform-aws-modules/notify-slack/aws"
-  version = "~> 4.5"
-  # insert the 4 required variables here
-  slack_channel                          = length(var.slack_channel_yellow_override) > 0 ? var.slack_channel_yellow_override : var.slack_channel_default
-  slack_username                         = "AWS Yellow SNS"
-  slack_webhook_url                      = "https://hooks.slack.com/services/${var.slack_webhook_key}"
-  sns_topic_name                         = var.enabled ? aws_sns_topic.yellow[0].name : ""
-  create_sns_topic                       = false
-  slack_emoji                            = ":warning:"
-  lambda_function_name                   = "${var.name_prefix}-notify-slack-yellow"
-  cloudwatch_log_group_retention_in_days = var.cloudwatch_log_group_retention_in_days
-}
+module "notify_teams" {
+  # Create a map that contains only the ["color"] that are configured with a non-empty slack_webhook_url
+  for_each = { for name, config in local.channel_config : name => config if config.teams_webhook_url != "" }
+  source   = "./modules/teams-webhook/"
 
-# This comes from a public terraform module:  https://registry.terraform.io/modules/terraform-aws-modules/notify-slack/aws/2.0.0
-module "notify_slack_red" {
-  create  = var.enabled
-  source  = "terraform-aws-modules/notify-slack/aws"
-  version = "~> 4.5"
-  # insert the 4 required variables here
-  slack_channel                          = length(var.slack_channel_red_override) > 0 ? var.slack_channel_red_override : var.slack_channel_default
-  slack_username                         = "AWS Red SNS"
-  slack_webhook_url                      = "https://hooks.slack.com/services/${var.slack_webhook_key}"
-  sns_topic_name                         = var.enabled ? aws_sns_topic.red[0].name : ""
-  create_sns_topic                       = false
-  slack_emoji                            = ":alert:"
-  lambda_function_name                   = "${var.name_prefix}-notify-slack-red"
-  cloudwatch_log_group_retention_in_days = var.cloudwatch_log_group_retention_in_days
-}
-
-# This comes from a public terraform module:  https://registry.terraform.io/modules/terraform-aws-modules/notify-slack/aws/2.0.0
-module "notify_slack_security" {
-  create  = var.enabled
-  source  = "terraform-aws-modules/notify-slack/aws"
-  version = "~> 4.5"
-  # insert the 4 required variables here
-  slack_channel                          = length(var.slack_channel_security_override) > 0 ? var.slack_channel_security_override : var.slack_channel_default
-  slack_username                         = "AWS Security SNS"
-  slack_webhook_url                      = "https://hooks.slack.com/services/${var.slack_webhook_key}"
-  sns_topic_name                         = var.enabled ? aws_sns_topic.security[0].name : ""
-  create_sns_topic                       = false
-  slack_emoji                            = ":lock:"
-  lambda_function_name                   = "${var.name_prefix}-notify-slack-security"
-  cloudwatch_log_group_retention_in_days = var.cloudwatch_log_group_retention_in_days
+  sns_topic_arn        = aws_sns_topic.topics[each.key].arn
+  teams_webhook_url    = each.value.teams_webhook_url
+  lambda_function_name = "${var.name_prefix}-notify-teams-${each.key}"
 }
