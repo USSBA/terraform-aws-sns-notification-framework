@@ -1,5 +1,10 @@
 # Releases
 
+## v2.1.0
+
+- Bump notify-slack module to ~> 4.5 to support Terraform 0.14
+- Add configurable cloudwatch_log_group_retention_in_days
+
 ## v2.0.0
 
 - **Terraform 0.13**

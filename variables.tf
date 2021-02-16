@@ -36,3 +36,8 @@ variable "enabled" {
   default     = true
   description = "Optional.  Disable the entire module by passing false to this"
 }
+variable "cloudwatch_log_group_retention_in_days" {
+  description = "Specifies the number of days you want to retain log events in log group for Lambda."
+  type        = number
+  default     = 0
+}
