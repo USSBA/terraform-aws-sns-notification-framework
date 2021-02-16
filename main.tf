@@ -30,7 +30,7 @@ resource "aws_sns_topic" "email_admins" {
 module "notify_slack_green" {
   create  = var.enabled
   source  = "terraform-aws-modules/notify-slack/aws"
-  version = "4.1.0"
+  version = "~> 4.5"
   # insert the 4 required variables here
   slack_channel        = length(var.slack_channel_green_override) > 0 ? var.slack_channel_green_override : var.slack_channel_default
   slack_username       = "AWS Green SNS"
@@ -45,7 +45,7 @@ module "notify_slack_green" {
 module "notify_slack_yellow" {
   create  = var.enabled
   source  = "terraform-aws-modules/notify-slack/aws"
-  version = "4.1.0"
+  version = "~> 4.5"
   # insert the 4 required variables here
   slack_channel        = length(var.slack_channel_yellow_override) > 0 ? var.slack_channel_yellow_override : var.slack_channel_default
   slack_username       = "AWS Yellow SNS"
@@ -60,7 +60,7 @@ module "notify_slack_yellow" {
 module "notify_slack_red" {
   create  = var.enabled
   source  = "terraform-aws-modules/notify-slack/aws"
-  version = "4.1.0"
+  version = "~> 4.5"
   # insert the 4 required variables here
   slack_channel        = length(var.slack_channel_red_override) > 0 ? var.slack_channel_red_override : var.slack_channel_default
   slack_username       = "AWS Red SNS"
@@ -75,7 +75,7 @@ module "notify_slack_red" {
 module "notify_slack_security" {
   create  = var.enabled
   source  = "terraform-aws-modules/notify-slack/aws"
-  version = "4.1.0"
+  version = "~> 4.5"
   # insert the 4 required variables here
   slack_channel        = length(var.slack_channel_security_override) > 0 ? var.slack_channel_security_override : var.slack_channel_default
   slack_username       = "AWS Security SNS"
