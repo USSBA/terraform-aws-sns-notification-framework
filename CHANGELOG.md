@@ -1,5 +1,15 @@
 # Releases
 
+## v3.0.0
+
+- Supporting Microsoft Teams for notifications
+- **BREAKING CHANGES**
+  - Basically all variables have been reworked
+  - Default variables are prefixed with `default_`
+  - Override variables are now in maps of `<color>_overrides`
+  - `slack_webhook_key` is now `default_slack_webhook_url`, and requires the full `https://<blah>`
+- Bump notify-slack module to ~> 4.11
+
 ## v2.1.0
 
 - Bump notify-slack module to ~> 4.5 to support Terraform 0.14

@@ -1,10 +1,10 @@
-# Pre-populate parameter store with your Teams webhook URL
+# Pre-populate parameter store with your Slack webhook URL
 data "aws_ssm_parameter" "sns_topic_slack_webhook" {
   name = "/slack/webhooks/test_url"
 }
 module "sns" {
   #source  = "USSBA/sns-notification-framework/aws"
-  #version = "~> 2.1"
+  #version = "~> 3.0"
   source = "../../"
 
   name_prefix               = "sns-webhook-framework-just-slack"

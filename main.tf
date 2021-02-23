@@ -43,7 +43,7 @@ resource "aws_sns_topic" "email_admins" {
   # - #TODO: addresses TBD
 }
 
-## This comes from a public terraform module:  https://registry.terraform.io/modules/terraform-aws-modules/notify-slack/aws/2.0.0
+## This comes from a public terraform module:  https://registry.terraform.io/modules/terraform-aws-modules/notify-slack
 module "notify_slack" {
   # Create a map that contains only the ["color"] that are configured with a non-empty slack_webhook_url
   for_each = { for name, config in local.channel_config : name => config if config.slack_webhook_url != "" }
@@ -61,7 +61,7 @@ module "notify_slack" {
 }
 
 module "notify_teams" {
-  # Create a map that contains only the ["color"] that are configured with a non-empty slack_webhook_url
+  # Create a map that contains only the ["color"] that are configured with a non-empty teams_webhook_url
   for_each = { for name, config in local.channel_config : name => config if config.teams_webhook_url != "" }
   source   = "./modules/teams-webhook/"
 

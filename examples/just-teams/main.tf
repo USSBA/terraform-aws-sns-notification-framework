@@ -4,7 +4,7 @@ data "aws_ssm_parameter" "sns_topic_teams_webhook" {
 }
 module "sns" {
   #source  = "USSBA/sns-notification-framework/aws"
-  #version = "~> 2.1"
+  #version = "~> 3.0"
   source = "../../"
 
   name_prefix               = "sns-webhook-framework-just-teams"
