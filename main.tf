@@ -4,28 +4,28 @@ locals {
     green = {
       slack_channel     = try(var.green_overrides.slack_channel, var.default_slack_channel)
       slack_webhook_url = try(var.green_overrides.slack_webhook_url, var.default_slack_webhook_url)
-      slack_emoji       = try(var.green_overrides.slack_emoji, var.default_slack_emoji)
+      slack_emoji       = try(var.green_overrides.slack_emoji, var.default_slack_emoji != "" ? var.default_slack_emoji : ":large_green_circle:")
       slack_username    = try(var.green_overrides.slack_username, "${var.default_slack_username} Green")
       teams_webhook_url = try(var.green_overrides.teams_webhook_url, var.default_teams_webhook_url)
     }
     yellow = {
       slack_channel     = try(var.yellow_overrides.slack_channel, var.default_slack_channel)
       slack_webhook_url = try(var.yellow_overrides.slack_webhook_url, var.default_slack_webhook_url)
-      slack_emoji       = try(var.yellow_overrides.slack_emoji, var.default_slack_emoji)
+      slack_emoji       = try(var.yellow_overrides.slack_emoji, var.default_slack_emoji != "" ? var.default_slack_emoji : ":large_yellow_circle:")
       slack_username    = try(var.yellow_overrides.slack_username, "${var.default_slack_username} Yellow")
       teams_webhook_url = try(var.yellow_overrides.teams_webhook_url, var.default_teams_webhook_url)
     }
     red = {
       slack_channel     = try(var.red_overrides.slack_channel, var.default_slack_channel)
       slack_webhook_url = try(var.red_overrides.slack_webhook_url, var.default_slack_webhook_url)
-      slack_emoji       = try(var.red_overrides.slack_emoji, var.default_slack_emoji)
+      slack_emoji       = try(var.red_overrides.slack_emoji, var.default_slack_emoji != "" ? var.default_slack_emoji : ":red_circle:")
       slack_username    = try(var.red_overrides.slack_username, "${var.default_slack_username} Red")
       teams_webhook_url = try(var.red_overrides.teams_webhook_url, var.default_teams_webhook_url)
     }
     security = {
       slack_channel     = try(var.security_overrides.slack_channel, var.default_slack_channel)
       slack_webhook_url = try(var.security_overrides.slack_webhook_url, var.default_slack_webhook_url)
-      slack_emoji       = try(var.security_overrides.slack_emoji, var.default_slack_emoji)
+      slack_emoji       = try(var.security_overrides.slack_emoji, var.default_slack_emoji != "" ? var.default_slack_emoji : ":lock:")
       slack_username    = try(var.security_overrides.slack_username, "${var.default_slack_username} Security")
       teams_webhook_url = try(var.security_overrides.teams_webhook_url, var.default_teams_webhook_url)
     }

@@ -20,8 +20,8 @@ variable "default_slack_channel" {
 }
 variable "default_slack_emoji" {
   type        = string
-  description = "Slack emoji to act as the avatar for messages.  Default is :aws:.  Only used if `slack_webhook_url`s are provided."
-  default     = ":aws:"
+  description = "Slack emoji to act as the avatar for messages, surrounded by colons `:`.  Default defers to color-specific overrides.  Setting this will take precedence over the deferred defaults."
+  default     = ""
 }
 variable "default_slack_username" {
   type        = string

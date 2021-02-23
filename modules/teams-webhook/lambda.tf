@@ -16,6 +16,7 @@ module "lambda" {
   function_name = var.lambda_function_name
   handler       = "notify_teams.lambda_handler"
   source_path   = "${path.module}/functions/notify_teams.py"
+  artifacts_dir = "${path.root}/builds"
   runtime       = "python3.8"
   timeout       = 30
 

@@ -1,3 +1,6 @@
 **/*.tfvars
 **/.terraform*
 **/terraform.tfstate*
+**/builds/
+!**/builds/.gitkeep
+**/*.zip
