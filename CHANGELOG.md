@@ -1,5 +1,9 @@
 # Releases
 
+## v3.0.1
+
+- BUGFIX: Apply cloudwatch_log_group_retention_in_days to notify-teams module as well
+
 ## v3.0.0
 
 - Supporting Microsoft Teams for notifications
