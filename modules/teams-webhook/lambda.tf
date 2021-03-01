@@ -13,12 +13,13 @@ module "lambda" {
   version = "~> 1.35"
   publish = true
 
-  function_name = var.lambda_function_name
-  handler       = "notify_teams.lambda_handler"
-  source_path   = "${path.module}/functions/notify_teams.py"
-  artifacts_dir = "${path.root}/builds"
-  runtime       = "python3.8"
-  timeout       = 30
+  function_name                     = var.lambda_function_name
+  handler                           = "notify_teams.lambda_handler"
+  source_path                       = "${path.module}/functions/notify_teams.py"
+  artifacts_dir                     = "${path.root}/builds"
+  runtime                           = "python3.8"
+  timeout                           = 30
+  cloudwatch_logs_retention_in_days = var.cloudwatch_log_group_retention_in_days
 
   environment_variables = {
     TEAMS_WEBHOOK_URL = var.teams_webhook_url
