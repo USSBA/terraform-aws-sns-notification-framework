@@ -1,5 +1,9 @@
 # Releases
 
+## v3.1.0
+
+- Fancy formatting for CloudWatch Notifications to Teams
+
 ## v3.0.1
 
 - BUGFIX: Apply cloudwatch_log_group_retention_in_days to notify-teams module as well

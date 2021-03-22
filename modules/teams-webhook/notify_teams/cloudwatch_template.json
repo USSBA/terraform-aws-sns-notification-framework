@@ -1,0 +1,53 @@
+{
+    "type": "message",
+    "attachments": [
+        {
+            "contentType": "application/vnd.microsoft.card.adaptive",
+            "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+            "version": "1.2",
+            "content": {
+                "type": "AdaptiveCard",
+                "body": [
+                    {
+                        "type": "TextBlock",
+                        "size": "Medium",
+                        "weight": "Bolder",
+                        "text": "CloudWatch Alarm",
+                        "wrap": true
+                    },
+                    {
+                        "type": "TextBlock",
+                        "size": "Medium",
+                        "weight": "Bolder",
+                        "text": "$AlarmName",
+                        "wrap": true
+                    },
+                    {
+                        "type": "FactSet",
+                        "facts": [
+                            {
+                                "title": "Description",
+                                "value": "$AlarmDescription"
+                            },
+                            {
+                                "title": "Reason",
+                                "value": "$NewStateReason"
+                            },
+                            {
+                                "title": "State",
+                                "value": "$NewStateValue"
+                            }
+                        ]
+                    }
+                ],
+                "actions": [
+                    {
+                        "type": "Action.OpenUrl",
+                        "title": "Link to Alarm in CloudWatch",
+                        "url": "$ALARM_URL"
+                    }
+                ]
+            }
+        }
+    ]
+}
