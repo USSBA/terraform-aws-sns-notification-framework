@@ -1,5 +1,13 @@
 # Releases
 
+## v4.0.0
+
+- **BREAKING CHANGES**
+  - Bump lambda submodule to `~> 2.0` which will re-create lambdas
+  - Flag webhook url variables as sensitive (tf 0.14+)
+  - Call `nonsensitive` while iterating over a list (tf 0.15+)
+- Bump sub-modules for Terraform 0.15 support
+
 ## v3.1.0
 
 - Fancy formatting for CloudWatch Notifications to Teams

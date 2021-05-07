@@ -10,7 +10,7 @@ data "archive_file" "lambda" {
 
 module "lambda" {
   source  = "terraform-aws-modules/lambda/aws"
-  version = "~> 1.35"
+  version = "~> 2.0"
   publish = true
 
   function_name                     = var.lambda_function_name
@@ -36,9 +36,9 @@ module "lambda" {
 resource "aws_sns_topic_subscription" "sns_notify_slack" {
   topic_arn = var.sns_topic_arn
   protocol  = "lambda"
-  endpoint  = module.lambda.this_lambda_function_arn
+  endpoint  = module.lambda.lambda_function_arn
 }
 
 output "lambda_arn" {
-  value = module.lambda.this_lambda_function_arn
+  value = module.lambda.lambda_function_arn
 }

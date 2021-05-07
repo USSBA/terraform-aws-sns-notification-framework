@@ -12,8 +12,12 @@ repos:
       rev: v1.43.0
       hooks:
       -   id: terraform_fmt
-  -   repo: https://github.com/markdownlint/markdownlint
-      rev: master
-      hooks:
-      -   id: markdownlint
-          args: [--rules,"~MD013,~MD029"]
+#  -   repo: https://github.com/jumanjihouse/pre-commit-hooks
+#      rev: master
+#      hooks: 2.1.5
+#      -   id: markdownlint
+#          a
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: 2.1.5  # or specific git tag
+    hooks:
+      - id: markdownlint # Configure in .mdlrc
