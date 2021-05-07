@@ -30,6 +30,10 @@ locals {
       teams_webhook_url = try(var.security_overrides.teams_webhook_url, var.default_teams_webhook_url)
     }
   }
+  # Create a set that contains only the ["color"] that are configured with a non-empty *_webhook_url
+  # Wrap this in nonsensitive because the name list is... not sensitive
+  slack_colors = toset(nonsensitive([for name in keys(local.channel_config) : name if local.channel_config[name].slack_webhook_url != ""]))
+  teams_colors = toset(nonsensitive([for name in keys(local.channel_config) : name if local.channel_config[name].teams_webhook_url != ""]))
 }
 resource "aws_sns_topic" "topics" {
   for_each = local.channel_config
@@ -45,15 +49,14 @@ resource "aws_sns_topic" "email_admins" {
 
 ## This comes from a public terraform module:  https://registry.terraform.io/modules/terraform-aws-modules/notify-slack
 module "notify_slack" {
-  # Create a map that contains only the ["color"] that are configured with a non-empty slack_webhook_url
-  for_each = { for name, config in local.channel_config : name => config if config.slack_webhook_url != "" }
+  for_each = local.slack_colors
   source   = "terraform-aws-modules/notify-slack/aws"
-  version  = "~> 4.11"
+  version  = "~> 4.14"
 
-  slack_channel        = each.value.slack_channel
-  slack_username       = each.value.slack_username
-  slack_webhook_url    = each.value.slack_webhook_url
-  slack_emoji          = each.value.slack_emoji
+  slack_channel        = local.channel_config[each.key].slack_channel
+  slack_username       = local.channel_config[each.key].slack_username
+  slack_webhook_url    = local.channel_config[each.key].slack_webhook_url
+  slack_emoji          = local.channel_config[each.key].slack_emoji
   sns_topic_name       = aws_sns_topic.topics[each.key].name
   create_sns_topic     = false
   lambda_function_name = "${var.name_prefix}-notify-slack-${each.key}"
@@ -62,12 +65,11 @@ module "notify_slack" {
 }
 
 module "notify_teams" {
-  # Create a map that contains only the ["color"] that are configured with a non-empty teams_webhook_url
-  for_each = { for name, config in local.channel_config : name => config if config.teams_webhook_url != "" }
+  for_each = local.teams_colors
   source   = "./modules/teams-webhook/"
 
   sns_topic_arn        = aws_sns_topic.topics[each.key].arn
-  teams_webhook_url    = each.value.teams_webhook_url
+  teams_webhook_url    = local.channel_config[each.key].teams_webhook_url
   lambda_function_name = "${var.name_prefix}-notify-teams-${each.key}"
 
   cloudwatch_log_group_retention_in_days = var.cloudwatch_log_group_retention_in_days

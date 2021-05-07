@@ -7,11 +7,13 @@ variable "default_teams_webhook_url" {
   type        = string
   description = "The URL for your Microsoft Teams webhook.  This includes 'https://'. Consider this a 'secret'.  As such, it is STRONGLY advised not to commit this into the repository, but instead use a ParameterStore data resource to retrieve the data.  Similarly, do not commit the terraform state files, but store them in an encrypted bucket."
   default     = ""
+  sensitive   = true
 }
 variable "default_slack_webhook_url" {
   type        = string
   description = "The URL for your Slack webhook. This includes 'https://'.  Consider this a 'secret'.  As such, it is STRONGLY advised not to commit this into the repository, but instead use a ParameterStore data resource to retrieve the data.  Similarly, do not commit the terraform state files, but store them in an encrypted bucket."
   default     = ""
+  sensitive   = true
 }
 variable "default_slack_channel" {
   type        = string
