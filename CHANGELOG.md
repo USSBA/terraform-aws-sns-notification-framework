@@ -1,5 +1,12 @@
 # Releases
 
+## v5.0.0
+
+- **BREAKING CHANGES**
+  - Bump lambda submodule to `~> 3.1` will re-create lambdas
+  - Bump notify_slack module to `~> 5.0`
+  - AWS Provider is now `>= 4.8`
+
 ## v4.0.0
 
 - **BREAKING CHANGES**

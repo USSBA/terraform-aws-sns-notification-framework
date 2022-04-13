@@ -51,7 +51,7 @@ resource "aws_sns_topic" "email_admins" {
 module "notify_slack" {
   for_each = local.slack_colors
   source   = "terraform-aws-modules/notify-slack/aws"
-  version  = "~> 4.14"
+  version  = "~> 5.0"
 
   slack_channel        = local.channel_config[each.key].slack_channel
   slack_username       = local.channel_config[each.key].slack_username
