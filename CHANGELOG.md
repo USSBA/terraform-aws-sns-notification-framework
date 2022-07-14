@@ -1,5 +1,12 @@
 # Releases
 
+## v6.0.0
+
+- **BREAKING CHANGES**
+  - Removed slack notifications from the module. The module now only support Microsoft teams
+  - Bumped Terraform version from `>= 0.13` to `~> 1.0`
+  - Bumped AWS provider version from `>= 3.0` to `~> 4.0`
+
 ## v5.0.0
 
 - **BREAKING CHANGES**
