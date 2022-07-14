@@ -11,7 +11,7 @@
   },
   "vcs": "git",
   "laborHours": 16,
-  "tags": ["SBA", "Terraform", "AWS", "module", "sns", "slack", "lambda"],
+  "tags": ["SBA", "Terraform", "AWS", "module", "sns", "lambda"],
   "contact": { "email": "Andrew.Davy@sba.gov" },
   "homepageURl": "https://registry.terraform.io/modules/USSBA/sns-notification-framework/"
 }
