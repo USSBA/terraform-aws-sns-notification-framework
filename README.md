@@ -11,22 +11,15 @@ This module creates a number of SNS topics and Slack Notification modules to pro
 
 ### Variables
 
-#### Required for Slack notifications
-
-* `default_slack_webhook_url` - The URL for your Slack webhook. This includes `https://`.  Consider this a 'secret'.  As such, it is STRONGLY advised not to commit this into the repository, but instead use a ParameterStore data resource to retrieve the data.  Similarly, do not commit the terraform state files, but store them in an encrypted bucket.
-* `default_slack_channel` - Default channel where messages should be sent. Required if any of `default_slack_webhook_url` or `*_overrides.slack_webhook_url` are provided.
-
 #### Required for Teams notifications
 
 * `default_teams_webhook_url` - The URL for your Teams webhook. This includes `https://`.  Consider this a 'secret'.  As such, it is STRONGLY advised not to commit this into the repository, but instead use a ParameterStore data resource to retrieve the data.  Similarly, do not commit the terraform state files, but store them in an encrypted bucket.
 
 #### Optional
 
-* `default_slack_emoji` - Slack emoji to act as the avatar for messages.
-* `default_slack_username` - Username that shows up for Slack messages. This var will be suffixed with `[color]` (such as Red, Green).  Default is `AWS SNS [color]`.
 * `green_overrides`, `yellow_overrides`, `red_overrides`, `security_overrides` - Maps to configure any color-specific values.
   * Map elements are named by removing `default_` from the other module variables.
-  * `{slack_webhook_url = "", slack_channel = "", slack_emoji = "", slack_username = "", teams_webhook_url = ""}`
+  * `{teams_webhook_url = ""}`
 * `cloudwatch_log_group_retention_in_days` - How long to retain cloudwatch logs for lambda.  Defaults to `0`, forever.
 
 ### Example

@@ -33,6 +33,8 @@ module "lambda" {
   }
 }
 
+# 714: The logical name of this resource is not correct. It is a teams SNS notification.
+# Will be redesigning this module in the future.
 resource "aws_sns_topic_subscription" "sns_notify_slack" {
   topic_arn = var.sns_topic_arn
   protocol  = "lambda"

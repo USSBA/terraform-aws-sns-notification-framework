@@ -16,9 +16,6 @@ output "sns_security" {
   value = aws_sns_topic.topics["security"]
 }
 
-output "slack_lambda_arns" {
-  value = { for key, value in module.notify_slack : key => value.notify_slack_lambda_function_arn }
-}
 output "teams_lambda_arns" {
   value = { for key, value in module.notify_teams : key => value.lambda_arn }
 }
