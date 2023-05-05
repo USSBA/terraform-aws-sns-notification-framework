@@ -148,7 +148,16 @@ resource "random_uuid" "source_hash" {
       filebase64sha256("${path.module}/lambda_function/templates/default.json"),
       filebase64sha256("${path.module}/lambda_function/templates/default.txt"),
       filebase64sha256("${path.module}/lambda_function/templates/default.html"),
-    ])
+    ]),
+    args = nonsensitive(base64encode(join(",", [
+      var.name_prefix,
+      var.webhook_url_green,
+      var.webhook_url_yellow,
+      var.webhook_url_red,
+      var.webhook_url_security,
+      var.email_from,
+      var.email_to,
+    ])))
   }
 }
 
