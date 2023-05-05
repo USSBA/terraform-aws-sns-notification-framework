@@ -1,0 +1,10 @@
+CloudWatch Alarm - $AlarmName
+
+Description:
+$AlarmDescription
+
+State:
+$NewStateValue
+
+Link to Alarm in CloudWatch:
+$PageLink

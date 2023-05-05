@@ -1,30 +1,56 @@
 # terraform-aws-sns-notification-framework
 
-This module creates a number of SNS topics and Slack Notification modules to provide a consistent alerting framework across multiple AWS accounts.  The focus is to be prescriptive about what types of SNS buckets are useful to our AWS projects, but you might find value in it, too.
+## Description
 
-## Features
+This module will provision 4 unique SNS topics and for the moment let us refer to them as `Green`, `Yellow`, `Red`, and `Security`. A Lambda Function will also be provisioned and subscribed to each of the 4 topics to handle the notifications and relay them to the appropriate Microsoft Teams Webhook. If configured this module will use SES to relay Red and Security notification respectively.
 
-* 4 Levels of notification: red, yellow, green, and security
-* Slack notification, defaults to share a channel for all alerts, but allows overriding
+### Topic Delegation
+
+**Green** - This topic is for general purpose information.
+
+  * Automated build has started
+  * Automated build has completed
+  * Backup Job started
+  * Backup Job complete
+  * Alarm transition to OK state
+
+**Yellow** - This topic is for warning/precursor information.
+
+  * CPU or Memory lower threshold is breaching
+  * CI/CD build failure
+  * Auto-Scaling Events
+  * Low EBS or RDS diskspace
+
+**Red** - This topic is used for critical application and infrastructure information.
+
+  * CPU or Memory upper threshold is breaching
+  * CI/CD deployment failure
+  * Healthcheck failures
+
+**Security** - This topic is used for CISO/SOC related information.
+
+  * CVE has been detected
+  * Unauthorized access has been detected
+  * Credential reports
+  * Out-of-date Package has been detected
 
 ## Usage
 
-### Variables
+### Module Inputs
 
-#### Required for Teams notifications
+| Variable                      | Description |
+| :-                            | :- |
+| _name_prefix_                 | **required**<br/>A short and unique name prefix used to label resources.<br/><br/>
+| _webhook_url_green_           | **required**<br/>A Microsoft Teams webhook URL to relay Green alerts.<br/><br/>
+| _webhook_url_yellow_          | **required**<br/>A Microsoft Teams webhook URL to relay Yellow alerts.<br/><br/>
+| _webhook_url_red_             | **required**<br/>A Microsoft Teams webhook URL to relay Red alerts.<br/><br/>
+| _webhook_url_security_        | **required**<br/>A Microsoft Teams webhook URL to relay Security alerts.<br/><br/>
+| _email_from_                  | **optional**<br/>A email address by whom the message will be sent.<br/>_default: `undefined`_
+| _email_to_                    | **optional**<br/>A email address by whom the message will be recieved.<br/>_default: `undefined`_
+| _log_group_retention_in_days_ | **optional**<br/>A number of days to retain logs.<br/>_default: `90`_
 
-* `default_teams_webhook_url` - The URL for your Teams webhook. This includes `https://`.  Consider this a 'secret'.  As such, it is STRONGLY advised not to commit this into the repository, but instead use a ParameterStore data resource to retrieve the data.  Similarly, do not commit the terraform state files, but store them in an encrypted bucket.
-
-#### Optional
-
-* `green_overrides`, `yellow_overrides`, `red_overrides`, `security_overrides` - Maps to configure any color-specific values.
-  * Map elements are named by removing `default_` from the other module variables.
-  * `{teams_webhook_url = ""}`
-* `cloudwatch_log_group_retention_in_days` - How long to retain cloudwatch logs for lambda.  Defaults to `0`, forever.
-
-### Example
-
-See [examples directory](./examples)
+> <br/>**Considering Email Alerts?** <br/><br/>
+> Please note that if you choose to configure the `email_from` and `email_to` that you may be subject to additional SES configuration. For instance both addresses will need to be verified or at the very least the senders domain. You may also need to place a service request with AWS to lift SES out of its default `sandbox` configuraiton.<br/><br/>
 
 ## Contributing
 

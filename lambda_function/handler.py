@@ -37,32 +37,36 @@ class Alert:
   def send_email(self, plain_text, hyper_text):
     from_email = os.environ.get('EMAIL_FROM', 'undefined')
     to_email = os.environ.get('EMAIL_TO', 'undefined')
-    print(f'EmailFrom = {from_email}')
-    print(f'EmailTo = {to_email}')
-    result = self.ses_client.send_email(
-      Source=from_email,
-      Destination={
-        'ToAddresses': [to_email],
-        'CcAddresses': [],
-        'BccAddresses': []
-      },
-      Message={
-        'Subject': {
-          'Data': 'Automated Notification',
-          'Charset': 'utf-8'
+    print(f'EmailFrom: {from_email}')
+    print(f'EmailTo: {to_email}')
+    #TODO: in the future we should use a simple regex to validate email format
+    if from_email == 'undefined' or to_email == 'undefined':
+      print(f'Email notifications are disabled, EmailFrom = {from_email}, EmailTo = {to_email}')
+    else:
+      result = self.ses_client.send_email(
+        Source = from_email,
+        Destination = {
+          'ToAddresses': [to_email],
+          'CcAddresses': [],
+          'BccAddresses': []
         },
-        'Body': {
-          'Text': {
-            'Data': plain_text,
+        Message = {
+          'Subject': {
+            'Data': 'Automated Notification',
             'Charset': 'utf-8'
           },
-          'Html': {
-            'Data': hyper_text,
-            'Charset': 'utf-8'
+          'Body': {
+            'Text': {
+              'Data': plain_text,
+              'Charset': 'utf-8'
+            },
+            'Html': {
+              'Data': hyper_text,
+              'Charset': 'utf-8'
+            }
           }
         }
-      }
-    )
+      )
 
 ##
 ## TeamsAlert
@@ -87,13 +91,14 @@ class TeamsAlert(Alert):
       cw_template = Template(t.read())
       self.send_alert(cw_template.substitute(alarm))
     # we only send email when the severity level is red/security
-    # TODO: implement txt and html templates
-    #if self.record.severity.level >= 2:
-    #  with open('templates/cloudwatch.txt', 'r') as txt:
-    #    with open('templates/cloudwatch.html', 'r') as htm:
-    #      txt_template = Template(txt.read())
-    #      htm_template = Template(htm.read())
-    #      self.send_email(txt_template.substitute(alarm), htm_template.substitute(alarm))
+    if self.record.severity.level >= 2:
+      with open('templates/cloudwatch.txt', 'r') as txt:
+        with open('templates/cloudwatch.html', 'r') as htm:
+          txt_template = Template(txt.read())
+          htm_template = Template(htm.read())
+          print(f'EmailText: {txt_template.substitute(alarm)}')
+          print(f'EmailHtml: {htm_template.substitute(alarm)}')
+          self.send_email(txt_template.substitute(alarm), htm_template.substitute(alarm))
 
   def __send_backup_job_alert(self):
     alarm = {}
@@ -108,13 +113,14 @@ class TeamsAlert(Alert):
       vault_template = Template(t.read())
       self.send_alert(vault_template.substitute(alarm))
     # we only send email when the severity level is red/security
-    # TODO: implement txt and html templates
-    #if self.record.severity.level >= 2 or:
-    #  with open('templates/default.txt', 'r') as txt:
-    #    with open('templates/default.html', 'r') as htm:
-    #      txt_template = Template(txt.read())
-    #      htm_template = Template(htm.read())
-    #      self.send_email(txt_template.substitute(alarm), htm_template.substitute(alarm))
+    if self.record.severity.level >= 2:
+      with open('templates/default.txt', 'r') as txt:
+        with open('templates/default.html', 'r') as htm:
+          txt_template = Template(txt.read())
+          htm_template = Template(htm.read())
+          print(f'EmailText: {txt_template.substitute(alarm)}')
+          print(f'EmailHtml: {htm_template.substitute(alarm)}')
+          self.send_email(txt_template.substitute(alarm), htm_template.substitute(alarm))
 
   def alert(self):
     if self.record.is_cloudwatch_alarm:
@@ -208,7 +214,7 @@ def lambda_handler(event, context):
 ## Used when testing from the local machine.
 if __name__ == "__main__":
   if len(sys.argv) != 2:
-    print(f'Usage: {sys.argv[0]} [file(json)]')
+    print(f'Usage: python3 lambda_handler.py [file(json)]')
     sys.exit(1)
 
   with open(sys.argv[1], 'r') as f:
