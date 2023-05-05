@@ -1,0 +1,10 @@
+$AlertType
+
+Message:
+$Message
+
+Event Type:
+$EventType
+
+Status:
+$Status
