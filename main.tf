@@ -72,28 +72,31 @@ locals {
 resource "aws_sns_topic" "topics" {
   count = length(local.topic_colors)
   name  = "${var.name_prefix}-teams-${local.topic_colors[count.index]}-notifications"
+}
 
-  # Note:
-  # In the event we ever need to place a delivery policy on the topic
+data "aws_iam_policy_document" "topic_policy" {
+  count = length(local.topic_colors)
+  statement {
+    actions = [
+      "sns:Publish",
+      "sns:Subscribe",
+    ]
+    principals {
+      type = "Service"
+      identifiers = [
+        "backup.amazonaws.com"
+      ]
+    }
+    resources = [
+      aws_sns_topic.topics[count.index].arn
+    ]
+  }
+}
 
-  #https://docs.aws.amazon.com/sns/latest/dg/sns-message-delivery-retries.html
-  #delivery_policy = jsonencode({
-  #  http = {
-  #    defaultHealthyRetryPolicy = {
-  #      minDelayTarget     = 20
-  #      maxDelayTarget     = 20
-  #      numRetries         = 3
-  #      numMaxDelayRetries = 0
-  #      numNoDelayRetries  = 0
-  #      numMinDelayRetries = 0
-  #      backoffFunction    = "linear"
-  #    }
-  #    disableSubscriptionOverrides = false
-  #    defaultThrottlePolicy = {
-  #      maxReceivesPerSecond = 1
-  #    }
-  #  }
-  #})
+resource "aws_sns_topic_policy" "topic_policy" {
+  count  = length(local.topic_colors)
+  arn    = aws_sns_topic.topics[count.index].arn
+  policy = data.aws_iam_policy_document.topic_policy[count.index].json
 }
 
 #--------------------------------------------------
