@@ -1,5 +1,9 @@
 # Releases
 
+## v7.0.1
+- **UPDATE**
+  - Topic policies were added in support of AWS Backup Vault notifications.
+
 ## v7.0.0
 - **BREAKING CHANGES**
   - Overhauled the SNS framework requiring any prior versionxs of the module to be destroyed before using version 7.x.
