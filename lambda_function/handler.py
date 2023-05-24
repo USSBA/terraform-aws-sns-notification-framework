@@ -102,13 +102,13 @@ class TeamsAlert(Alert):
 
   def __send_backup_job_alert(self):
     alarm = {}
-    if self.record["Message"].__contains__("failed"):
+    if self.record.message.__contains__("failed"):
       self.record.change_severity('red')
     alarm.update({'schema': '$schema'})
     alarm.update({'AlertType': 'AWS Backup Event Notification'})
-    alarm.update({'Message': self.record["Message"]})
-    alarm.update({'EventType': self.record["MessageAttributes"]["EventType"]["Value"]})
-    alarm.update({'Status': self.record["MessageAttributes"]["State"]["Value"]})
+    alarm.update({'Message': self.record.message})
+    alarm.update({'EventType': self.record.record["MessageAttributes"]["EventType"]["Value"]})
+    alarm.update({'Status': self.record.record["MessageAttributes"]["State"]["Value"]})
     with open('templates/default.json', 'r') as t:
       vault_template = Template(t.read())
       self.send_alert(vault_template.substitute(alarm))
