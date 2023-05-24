@@ -1,36 +1,40 @@
 {
   "Records": [
     {
-      "EventSource": "aws: sns",
+      "EventSource": "aws:sns",
       "EventVersion": "1.0",
-      "EventSubscriptionArn": "arn:aws:sns:...-a3802aa1ed45",
+      "EventSubscriptionArn": "arn:aws:sns:us-east-1:133166063076:lower-teams-green-notifications:ab3e7429-c594-4612-a0c4-c3e50ca87007",
       "Sns": {
         "Type": "Notification",
-        "MessageId": "12345678-abcd-123a-def0-abcd1a234567",
-        "TopicArn": "arn:aws:sns:us-east-1:502235151991:alarm-green",
+        "MessageId": "2d8de829-99b2-5f09-a262-b4c1b2a6732b",
+        "TopicArn": "arn:aws:sns:us-east-1:133166063076:lower-teams-green-notifications",
         "Subject": "Notification from AWS Backup",
-        "Message": "An AWS Backup job was completed successfully. Recovery point ARN: arn:aws:ec2:us-west-1:123456789012:volume/vol-012f345df6789012d. Resource ARN : arn:aws:ec2:us-west-1:123456789012:volume/vol-012f345df6789012e. BackupJob ID : 1b2345b2-f22c-4dab-5eb6-bbc7890ed123",
-        "Timestamp": "2019-08-02T18:46:02.788Z",
+        "Message": "An AWS Backup job was started. Backed up Resource ARN : arn:aws:s3:::cert-mgmt-terraform-state. BackupJob Id : e0efe58c-fbab-4c61-bd78-f9476d09cc30",
+        "Timestamp": "2023-05-24T15:10:12.660Z",
+        "SignatureVersion": "1",
+        "Signature": "lym7FQgM/DmMmfCu0/AvqIgyzCMO6f+f/CILhjKjSCw417jVsz9zNP1gNeo//nI6YDEmHxcjEmKL45fmRkSgVUO69pwi1mT3rDcAlBERpF482cKCaEogwTWmXSMwfEqak0I7l7fgJ7E+QAtmKLwyXFkcTl72dPYnC8IMgdPq5A1aIeKHrYN2AINXAuV7XkKGDlQvVQklt9Zl6mDqgqDLDq9Ufmnu72p1oPm+0ya/K6PWCWEj3kqrl0BLlJhvcOzP1GfxpRBhq/a2fmi2oAF9OVvnvdQVlv1A18VDxw4LYi0dOhvXpg01UgdTkRi1uuupB8ur+Ce/EnZHHvtHw2cPRg==",
+        "SigningCertUrl": "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-01d088a6f77103d0fe307c0069e40ed6.pem",
+        "UnsubscribeUrl": "https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-east-1:133166063076:lower-teams-green-notifications:ab3e7429-c594-4612-a0c4-c3e50ca87007",
         "MessageAttributes": {
+          "AccountId": {
+            "Type": "String",
+            "Value": "133166063076"
+          },
           "EventType": {
             "Type": "String",
             "Value": "BACKUP_JOB"
           },
           "State": {
             "Type": "String",
-            "Value": "COMPLETED"
-          },
-          "AccountId": {
-            "Type": "String",
-            "Value": "123456789012"
-          },
-          "Id": {
-            "Type": "String",
-            "Value": "1b2345b2-f22c-4dab-5eb6-bbc7890ed123"
+            "Value": "RUNNING"
           },
           "StartTime": {
             "Type": "String",
-            "Value": "2019-09-02T13:48:52.226Z"
+            "Value": "2023-05-24T15:10:12.042Z"
+          },
+          "Id": {
+            "Type": "String",
+            "Value": "e0efe58c-fbab-4c61-bd78-f9476d09cc30"
           }
         }
       }

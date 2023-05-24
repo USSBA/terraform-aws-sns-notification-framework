@@ -1,5 +1,9 @@
 # Releases
 
+## v7.0.2
+- **FIX**
+  - Corrected logic causing the backup-vault-notification alerts to throw an exception when applying values to the template.
+
 ## v7.0.1
 - **UPDATE**
   - Topic policies were added in support of AWS Backup Vault notifications.
