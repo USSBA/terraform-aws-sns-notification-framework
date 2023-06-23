@@ -46,11 +46,11 @@ This module will provision 4 unique SNS topics and for the moment let us refer t
 | _webhook_url_red_             | **required**<br/>A Microsoft Teams webhook URL to relay Red alerts.<br/><br/>
 | _webhook_url_security_        | **required**<br/>A Microsoft Teams webhook URL to relay Security alerts.<br/><br/>
 | _email_from_                  | **optional**<br/>A email address by whom the message will be sent.<br/>_default: `undefined`_
-| _email_to_                    | **optional**<br/>A email address by whom the message will be recieved.<br/>_default: `undefined`_
+| _email_to_                    | **optional**<br/>A email address by whom the message will be received.<br/>_default: `undefined`_
 | _log_group_retention_in_days_ | **optional**<br/>A number of days to retain logs.<br/>_default: `90`_
 
 > <br/>**Considering Email Alerts?** <br/><br/>
-> Please note that if you choose to configure the `email_from` and `email_to` that you may be subject to additional SES configuration. For instance both addresses will need to be verified or at the very least the senders domain. You may also need to place a service request with AWS to lift SES out of its default `sandbox` configuraiton.<br/><br/>
+> Please note that if you choose to configure the `email_from` and `email_to` that you may be subject to additional SES configuration. For instance both addresses will need to be verified or at the very least the senders domain. You may also need to place a service request with AWS to lift SES out of its default `sandbox` configuration.<br/><br/>
 
 ## Contributing
 
