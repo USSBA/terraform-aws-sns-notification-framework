@@ -10,7 +10,7 @@
 
 ## v7.0.0
 - **BREAKING CHANGES**
-  - Overhauled the SNS framework requiring any prior versionxs of the module to be destroyed before using version 7.x.
+  - Overhauled the SNS framework requiring any prior versions of the module to be destroyed before using version 7.x.
   - Refactored the Python3 and Terraform logic so that the function will only re-deploy when there is a change detected.
   - Red and Security notifications can now be configured to send and email notification along side the Microsoft Teams notification.
 
