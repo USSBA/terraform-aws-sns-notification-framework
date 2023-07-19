@@ -1,5 +1,9 @@
 # Releases
 
+## v7.0.4
+- **FIX**
+  - Adding statement IDs to the SNS policy.
+
 ## v7.0.3
 - **FIX**
   - Corrected the SNS policy so that Cloud Watch alarms can publish messages.
