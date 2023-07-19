@@ -79,6 +79,20 @@ data "aws_iam_policy_document" "topic_policy" {
   statement {
     actions = [
       "sns:Publish",
+    ]
+    principals {
+      type = "Service"
+      identifiers = [
+        "cloudwatch.amazonaws.com"
+      ]
+    }
+    resources = [
+      aws_sns_topic.topics[count.index].arn
+    ]
+  }
+  statement {
+    actions = [
+      "sns:Publish",
       "sns:Subscribe",
     ]
     principals {
