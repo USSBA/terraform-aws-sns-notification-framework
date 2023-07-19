@@ -77,6 +77,7 @@ resource "aws_sns_topic" "topics" {
 data "aws_iam_policy_document" "topic_policy" {
   count = length(local.topic_colors)
   statement {
+    sid = "aws-cloudwatch"
     actions = [
       "sns:Publish",
     ]
@@ -91,6 +92,7 @@ data "aws_iam_policy_document" "topic_policy" {
     ]
   }
   statement {
+    sid = "aws-backup"
     actions = [
       "sns:Publish",
       "sns:Subscribe",
