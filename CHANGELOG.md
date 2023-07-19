@@ -1,5 +1,9 @@
 # Releases
 
+## v7.0.3
+- **FIX**
+  - Corrected the SNS policy so that Cloud Watch alarms can publish messages.
+
 ## v7.0.2
 - **FIX**
   - Corrected logic causing the backup-vault-notification alerts to throw an exception when applying values to the template.
