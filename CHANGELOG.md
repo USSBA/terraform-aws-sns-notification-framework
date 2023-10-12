@@ -1,5 +1,9 @@
 # Releases
 
+## v8.0.0
+- **UPDATE**
+  - Module now requires Terraform ~> 1.5 and Provider ~> 5.0
+
 ## v7.0.4
 - **FIX**
   - Adding statement IDs to the SNS policy.
