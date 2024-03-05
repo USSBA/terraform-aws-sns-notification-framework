@@ -42,6 +42,16 @@ variable "log_group_retention_in_days" {
   description = "Optional, The number of days to retain CloudWatch logs."
   default     = 90
 }
+variable "encrypted" {
+  type        = bool
+  description = "Optional, Should the topics support encryption at rest."
+  default     = false
+}
+variable "kms_master_key_id" {
+  type        = string
+  description = "Optional, The KMS managed key id used for encryption or by default used the AWS managed KMS alias."
+  default     = "alias/aws/sns"
+}
 
 #--------------------------------------------------
 # MODULE OUTPUT VARIABLES
@@ -70,8 +80,9 @@ locals {
 # TOPIC CONFIG
 #--------------------------------------------------
 resource "aws_sns_topic" "topics" {
-  count = length(local.topic_colors)
-  name  = "${var.name_prefix}-teams-${local.topic_colors[count.index]}-notifications"
+  count             = length(local.topic_colors)
+  name              = "${var.name_prefix}-teams-${local.topic_colors[count.index]}-notifications"
+  kms_master_key_id = try(var.encrypted ? var.kms_master_key_id : null, null)
 }
 
 data "aws_iam_policy_document" "topic_policy" {

@@ -1,5 +1,10 @@
 # Releases
 
+## v8.0.1
+- **UPDATE**
+  - Module now supports new variables for encryption at rest.
+  - Terraform min version is now 1.6.
+
 ## v8.0.0
 - **UPDATE**
   - Module now requires Terraform ~> 1.5 and Provider ~> 5.0
