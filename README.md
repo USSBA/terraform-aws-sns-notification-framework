@@ -38,16 +38,18 @@ This module will provision 4 unique SNS topics and for the moment let us refer t
 
 ### Module Inputs
 
-| Variable                      | Description |
-| :-                            | :- |
-| _name_prefix_                 | **required**<br/>A short and unique name prefix used to label resources.<br/><br/>
-| _webhook_url_green_           | **required**<br/>A Microsoft Teams webhook URL to relay Green alerts.<br/><br/>
-| _webhook_url_yellow_          | **required**<br/>A Microsoft Teams webhook URL to relay Yellow alerts.<br/><br/>
-| _webhook_url_red_             | **required**<br/>A Microsoft Teams webhook URL to relay Red alerts.<br/><br/>
-| _webhook_url_security_        | **required**<br/>A Microsoft Teams webhook URL to relay Security alerts.<br/><br/>
-| _email_from_                  | **optional**<br/>A email address by whom the message will be sent.<br/>_default: `undefined`_
-| _email_to_                    | **optional**<br/>A email address by whom the message will be received.<br/>_default: `undefined`_
-| _log_group_retention_in_days_ | **optional**<br/>A number of days to retain logs.<br/>_default: `90`_
+| Variable                      | Description                                                             |
+| :-                            | :-                                                                      |
+| *email_from*                  | **Optional;** Email address of the sender.                              |
+| *email_to*                    | **Optional;** Email address of the reciever.                            |
+| *encrypted*                   | **Optional;** Topics will be encrypted at rest using a KMS managed key. |
+| *kms_key_alias*               | **Optional;** Required when _encrypted_ is turned on.                   |
+| *log_group_retention_in_days* | **Optional;** Number of days applied to the log group retention policy. |
+| *name_prefix*                 | **Required;** Unique name prefix used to label resources.               |
+| *webhook_url_green*           | **Required;** MS Teams WebHook URI for Green Alerts.                    |
+| *webhook_url_red*             | **Required;** MS Teams WebHook URL for Red Alerts.                      |
+| *webhook_url_security*        | **Required;** MS Teams WebHook URL for Security Alerts.                 |
+| *webhook_url_yellow*          | **Required;** MS Teams WebHook URL for Yellow Alerts.                   |
 
 > <br/>**Considering Email Alerts?** <br/><br/>
 > Please note that if you choose to configure the `email_from` and `email_to` that you may be subject to additional SES configuration. For instance both addresses will need to be verified or at the very least the senders domain. You may also need to place a service request with AWS to lift SES out of its default `sandbox` configuration.<br/><br/>
