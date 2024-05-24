@@ -1,4 +1,5 @@
 data "aws_region" "current" {}
+data "aws_caller_identity" "current" {}
 
 #--------------------------------------------------
 # MODULE INPUT VARIABLES
@@ -47,15 +48,16 @@ variable "encrypted" {
   description = "Optional, Should the topics support encryption at rest."
   default     = false
 }
-variable "kms_master_key_id" {
+variable "kms_key_alias" {
   type        = string
-  description = "Optional, The KMS managed key id used for encryption or by default used the AWS managed KMS alias."
-  default     = "alias/aws/sns"
+  description = "Optional, The alias name for the KMS managed key. Requires var.encrypted == true."
+  default     = ""
 }
 
 #--------------------------------------------------
 # MODULE OUTPUT VARIABLES
 #--------------------------------------------------
+
 output "topics" {
   value = aws_sns_topic.topics
 }
@@ -72,6 +74,7 @@ output "lambda_function" {
 #--------------------------------------------------
 # MODULE SETTINGS: STATIC
 #--------------------------------------------------
+
 locals {
   topic_colors = ["green", "yellow", "red", "security"]
 }
@@ -82,7 +85,7 @@ locals {
 resource "aws_sns_topic" "topics" {
   count             = length(local.topic_colors)
   name              = "${var.name_prefix}-teams-${local.topic_colors[count.index]}-notifications"
-  kms_master_key_id = try(var.encrypted ? var.kms_master_key_id : null, null)
+  kms_master_key_id = try(var.encrypted ? aws_kms_key.key[0].arn : null, null)
 }
 
 data "aws_iam_policy_document" "topic_policy" {
@@ -247,5 +250,76 @@ resource "aws_sns_topic_subscription" "lambda" {
   protocol  = "lambda"
   endpoint  = aws_lambda_function.lambda.arn
   topic_arn = aws_sns_topic.topics[count.index].arn
+}
+
+#--------------------------------------------------
+# KMS CONFIG
+#--------------------------------------------------
+
+resource "aws_kms_key" "key" {
+  count = var.encrypted ? 1 : 0
+
+  policy = data.aws_iam_policy_document.key[0].json
+}
+
+resource "aws_kms_alias" "key" {
+  count = var.encrypted ? 1 : 0
+
+  name          = "alias/${var.kms_key_alias}"
+  target_key_id = aws_kms_key.key[0].key_id
+}
+
+data "aws_iam_policy_document" "key" {
+  count = var.encrypted ? 1 : 0
+
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
+    }
+    actions = [
+      "kms:*",
+    ]
+    resources = ["*"]
+  }
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+    actions = [
+      "kms:Encrypt",
+      "kms:Decrypt",
+      "kms:GenerateDataKey*",
+      "kms:CreateGrant",
+      "kms:ListGrants",
+      "kms:DescribeKey",
+    ]
+    resources = ["*"]
+    condition {
+      test     = "StringEquals"
+      variable = "kms:ViaService"
+      values   = ["sns.us-east-1.amazonaws.com"]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "kms:CallerAccount"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
+  }
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["cloudwatch.amazonaws.com"]
+    }
+    actions = [
+      "kms:Decrypt",
+      "kms:GenerateDataKey*",
+    ]
+    resources = ["*"]
+  }
 }
 

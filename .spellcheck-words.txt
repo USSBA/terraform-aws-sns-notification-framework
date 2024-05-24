@@ -9,10 +9,13 @@ duplicative
 diskspace
 ebs
 healthcheck
+kms
+reciever
 ses
 sns
 submodule
 terraform
 tf
+uri
 url
 webhook

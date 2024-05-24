@@ -1,5 +1,11 @@
 # Releases
 
+## v9.0.0
+- ** UPDATE **
+  - Module no longer supports variable *kms_managed_key_id* and instead offers variable *kms_key_alias* when the variable *encrypted* is *true*.
+  - Module will now create a KMS managed key with the provided *kms_key_alias* and the appropriate key policy to allow CloudWatch Alarms to send
+    notifications when SNS Topics are *encrypted* at rest.
+
 ## v8.0.1
 - **UPDATE**
   - Module now supports new variables for encryption at rest.
