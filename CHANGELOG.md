@@ -1,5 +1,20 @@
 # Releases
 
+## v10.0.0
+- ** MAJOR UPDATE **
+  - Module no longer supports color-based topics, such as Red, Green or Yellow. Only a single topic is deployed and the alarm name will be sent by email.
+  - Teams support has been removed.
+  - When deploying this module, please delete version v9.x or lower of the SNS Framework, before deploying version 10.x or above.
+  - Terraform version has been upgraded to 1.9.5.
+  - Added functionality for the module to create a zip file and pass it to the Lambda Function resource during resource creation.
+  - Arguments `EMAIL_TO` and `EMAIL_FROM` are now required.
+  - `EMAIL_TO` can contain a list of email addresses, or a single recipient.
+  - Email subject is alarm name.
+  - Email body includes alarm description with new line preservation; includes Metric Details such as Metric Name, Namespace, and Threshold.
+  - Event-Time is included in the Email body, with the Module converting ISO format time to 12-hour time displayed in EST.
+  - Ensured the alarm link provided in the email is functional, correcting an issue previously of the link not working.
+
+
 ## v9.0.0
 - ** UPDATE **
   - Module no longer supports variable *kms_managed_key_id* and instead offers variable *kms_key_alias* when the variable *encrypted* is *true*.

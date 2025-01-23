@@ -1,193 +1,203 @@
-import base64, boto3, json, os, sys
-from urllib.error import HTTPError
-import urllib.request, urllib.parse
-from string import Template
-import smtplib, ssl
 from email.message import EmailMessage
+from string import Template
+from datetime import datetime
+import pytz
+import boto3, json, os, sys
+import smtplib, urllib, ssl
 
 # Environment Variables
 # --------------------------------------------------
 # AWS_REGION
 # EMAIL_FROM
 # EMAIL_TO
-# TEAMS_WEBHOOK_GREEN
-# TEAMS_WEBHOOK_YELLOW
-# TEAMS_WEBHOOK_RED
-# TEAMS_WEBHOOK_SECURITY
 # --------------------------------------------------
 
-##
-## Alert
-## Abstract Class
-## Performs the basic functions of sending MSTeams and Email alerts/messages
-class Alert:
-  def __init__(self, record):
-    self.record = record
-    self.ses_client = client = boto3.client('ses')
-
-  def send_alert(self, message):
+def format_event_time(time):
     try:
-      url = SeverityLevel.get_webhook_url(self.record.severity.color)
-      req = urllib.request.Request(url, message.encode('utf-8'), {'Content-Type': 'application/json'})
-      result = urllib.request.urlopen(req)
-    except HTTPError as e:
-      print(json.dumps({"code": e.getcode(), "info": e.info().as_string()}, indent=2))
-      raise
+        input_datetime = datetime.strptime(time, "%Y-%m-%dT%H:%M:%S.%f%z")
+        est = pytz.timezone('US/Eastern')
+        input_datetime_est = input_datetime.astimezone(est)
+        output_str = input_datetime_est.strftime("%A, %B %d, %Y %I:%M:%S %p EDT")
+        return output_str
+    except ValueError as e:
+        print(f"Error parsing time: {time} -> {str(e)}")
+        return None
 
-  def send_email(self, plain_text, hyper_text):
-    from_email = os.environ.get('EMAIL_FROM', 'undefined')
-    to_email = os.environ.get('EMAIL_TO', 'undefined')
-    print(f'EmailFrom: {from_email}')
-    print(f'EmailTo: {to_email}')
-    #TODO: in the future we should use a simple regex to validate email format
-    if from_email == 'undefined' or to_email == 'undefined':
-      print(f'Email notifications are disabled, EmailFrom = {from_email}, EmailTo = {to_email}')
-    else:
-      result = self.ses_client.send_email(
-        Source = from_email,
-        Destination = {
-          'ToAddresses': [to_email],
-          'CcAddresses': [],
-          'BccAddresses': []
-        },
-        Message = {
-          'Subject': {
-            'Data': 'Automated Notification',
-            'Charset': 'utf-8'
-          },
-          'Body': {
-            'Text': {
-              'Data': plain_text,
-              'Charset': 'utf-8'
-            },
-            'Html': {
-              'Data': hyper_text,
-              'Charset': 'utf-8'
-            }
-          }
-        }
-      )
+class Alert:
+    def __init__(self, record):
+        self.record = record
+        self.ses_client = boto3.client('ses')
+
+    def send_email(self, subject, plain_text, hyper_text):
+        from_email = os.environ.get('EMAIL_FROM', 'undefined')
+        to_email = os.environ.get('EMAIL_TO', 'undefined')
+        print(f'EmailFrom: {from_email}')
+        print(f'EmailTo: {to_email}')
+        if from_email == 'undefined' or to_email == 'undefined':
+            print(f'Email notifications are disabled, EmailFrom = {from_email}, EmailTo = {to_email}')
+        else:
+            result = self.ses_client.send_email(
+                Source=from_email,
+                Destination={
+                    'ToAddresses': to_email.replace(" ","").split(","),
+                    'CcAddresses': [],
+                    'BccAddresses': []
+                },
+                Message={
+                    'Subject': {
+                        'Data': subject,
+                        'Charset': 'utf-8'
+                    },
+                    'Body': {
+                        'Text': {
+                            'Data': plain_text,
+                            'Charset': 'utf-8'
+                        },
+                        'Html': {
+                            'Data': hyper_text,
+                            'Charset': 'utf-8'
+                        }
+                    }
+                }
+            )
 
 ##
-## TeamsAlert
+## EmailAlert
 ## Derived Class from Alert
-## Generates template text accordingly and utilized the base class functions to send alerts/messages
-class TeamsAlert(Alert):
-  def __init__(self, record):
-    super().__init__(record)
+## Generates template text accordingly and utilizes the base class functions to send email alerts/messages
+class EmailAlert(Alert):
+    def __init__(self, record):
+        super().__init__(record)
 
-  def __send_cloud_watch_alert(self):
-    alarm = {}
-    page_link = f"https://console.aws.amazon.com/cloudwatch/home?region={self.record.region}#alarm:alarmFilter=ANY;name={urllib.parse.quote(self.record.message['AlarmName'])}"
-    alarm.update({'AlarmName': self.record.message['AlarmName']})
-    if self.record.message['NewStateValue'] == 'OK' and self.record.severity.level == 0:
-      alarm.update({'AlarmDescription': f'{self.record.message["AlarmName"]} has returned to normal/expected operational levels'})
-    else:
-      alarm.update({'AlarmDescription': self.record.message['AlarmDescription']})
-    alarm.update({'schema': '$schema'})
-    alarm.update({'PageLink': page_link})
-    alarm.update({'NewStateValue': self.record.message['NewStateValue']})
-    with open('templates/cloudwatch.json', 'r') as t:
-      cw_template = Template(t.read())
-      self.send_alert(cw_template.substitute(alarm))
-    # we only send email when the severity level is red/security
-    if self.record.severity.level >= 2:
-      with open('templates/cloudwatch.txt', 'r') as txt:
-        with open('templates/cloudwatch.html', 'r') as htm:
-          txt_template = Template(txt.read())
-          htm_template = Template(htm.read())
-          print(f'EmailText: {txt_template.substitute(alarm)}')
-          print(f'EmailHtml: {htm_template.substitute(alarm)}')
-          self.send_email(txt_template.substitute(alarm), htm_template.substitute(alarm))
+    def __send_cloud_watch_alert(self):
+        alarm = {}
+        event_time = self.record.message.get('StateChangeTime', 'Unknown')
+        if event_time != 'Unknown':
+            event_time = format_event_time(event_time)
+            if event_time:
+                event_time = event_time
 
-  def __send_backup_job_alert(self):
-    alarm = {}
-    if self.record.message.__contains__("failed"):
-      self.record.change_severity('red')
-    alarm.update({'schema': '$schema'})
-    alarm.update({'AlertType': 'AWS Backup Event Notification'})
-    alarm.update({'Message': self.record.message})
-    alarm.update({'EventType': self.record.record["MessageAttributes"]["EventType"]["Value"]})
-    alarm.update({'Status': self.record.record["MessageAttributes"]["State"]["Value"]})
-    with open('templates/default.json', 'r') as t:
-      vault_template = Template(t.read())
-      self.send_alert(vault_template.substitute(alarm))
-    # we only send email when the severity level is red/security
-    if self.record.severity.level >= 2:
-      with open('templates/default.txt', 'r') as txt:
-        with open('templates/default.html', 'r') as htm:
-          txt_template = Template(txt.read())
-          htm_template = Template(htm.read())
-          print(f'EmailText: {txt_template.substitute(alarm)}')
-          print(f'EmailHtml: {htm_template.substitute(alarm)}')
-          self.send_email(txt_template.substitute(alarm), htm_template.substitute(alarm))
+        alarm_name = self.record.message.get('AlarmName', 'Unknown Alarm')
+        alarm_description = self.record.message.get('AlarmDescription', 'No description available')
+        def convert_line_breaks(description):
+            return description.replace("\\n\\n", "<br><br>)")
+        alarm_description_html = convert_line_breaks(alarm_description)
+        new_state_value = self.record.message.get('NewStateValue', 'Unknown State')
+        metric_name = self.record.message.get('Trigger', {}).get('MetricName', 'Unknown Metric')
+        namespace = self.record.message.get('Trigger', {}).get('Namespace', 'Unknown Namespace')
+        threshold = self.record.message.get('Trigger', {}).get('Threshold', 'Unknown Threshold')
+        page_link = f"https://console.aws.amazon.com/cloudwatch/home?region={self.record.region}#alarmsV2:alarm/{self.record.message.get('AlarmName', '')}"
 
-  def alert(self):
-    if self.record.is_cloudwatch_alarm:
-      self.__send_cloud_watch_alert()
-    elif self.record.is_backup_job:
-      self.__send_backup_job_alert()
-    else:
-      print(json.dumps(self.record, indent=2))
-      raise NotImplementedError('Notification Not Supported')
+        alarm.update({
+            'AlertType': 'CloudWatch Alarm Notification',
+            'EventTime': event_time,
+            'AlarmName': alarm_name,
+            'AlarmDescription': alarm_description_html,
+            'NewStateValue': new_state_value,
+            'MetricName': metric_name,
+            'Namespace': namespace,
+            'Threshold': threshold,
+            'PageLink': page_link
+        })
+
+        subject = f"{alarm_name}"
+
+        # Send email for CloudWatch alert
+        with open('templates/cloudwatch.txt', 'r') as txt:
+            with open('templates/cloudwatch.html', 'r') as htm:
+                txt_template = Template(txt.read())
+                htm_template = Template(htm.read())
+                plain_text = txt_template.safe_substitute(alarm)
+                html_text = htm_template.safe_substitute(alarm)
+                print(f'EmailText: {plain_text}')
+                print(f'EmailHtml: {html_text}')
+                self.send_email(subject, plain_text, html_text)
+
+    def __send_backup_job_alert(self):
+        alarm = {}
+        event_time = self.record.message.get('Time', 'Unknown')
+        if event_time != 'Unknown':
+            event_time = format_event_time(event_time)
+            if event_time:
+                event_time = event_time
+        event_type = self.record.message.get('EventType', 'Unknown Event Type')
+        status = self.record.record.get("MessageAttributes", {}).get("State", {}).get("Value", "Unknown Status")
+        job_name = self.record.message.get('BackupJobName', 'Unknown Job')
+        backup_plan = self.record.message.get('BackupPlanName', 'Unknown Plan')
+
+        alarm.update({'AlertType': 'AWS Backup Event Notification'})
+        alarm.update({'EventTime': event_time})
+        alarm.update({'EventType': event_type})
+        alarm.update({'Status': status})
+        alarm.update({'JobName': job_name})
+        alarm.update({'BackupPlan': backup_plan})
+
+        subject = f"{job_name}"
+
+        # Send email for backup job alert
+        with open('templates/default.txt', 'r') as txt:
+            with open('templates/default.html', 'r') as htm:
+                txt_template = Template(txt.read())
+                htm_template = Template(htm.read())
+                plain_text = txt_template.safe_substitute(alarm)
+                html_text = htm_template.safe_substitute(alarm)
+                print(f'EmailText: {plain_text}')
+                print(f'EmailHtml: {html_text}')
+                self.send_email(subject, plain_text, html_text)
+
+
+    def alert(self):
+        if self.record.is_cloudwatch_alarm:
+            self.__send_cloud_watch_alert()
+        elif self.record.is_backup_job:
+            self.__send_backup_job_alert()
+        else:
+            print(json.dumps(self.record, indent=2))
+            raise NotImplementedError('Notification Not Supported')
 
 ##
 ## SeverityLevel
 ## Stand Alone Class
 ## Determines the color and level of an alert based on the TopicArn or TopicName
 class SeverityLevel:
-  def __init__(self, name):
-    if 'green' in name:
-      self.color = 'green'
-      self.level = 0
-    elif 'yellow' in name:
-      self.color = 'yellow'
-      self.level = 1
-    elif 'red' in name:
-      self.color = 'red'
-      self.level = 2
-    else:
-      self.color = 'security'
-      self.level = 3
-
-  @staticmethod
-  def get_webhook_url(color):
-    return os.environ.get(f'TEAMS_WEBHOOK_{color.upper()}', 'undefined')
-
+    def __init__(self, name):
+        # Default severity to red
+        self.color = 'red'
+        self.level = 2
 ##
 ## SnsRecord
 ## Stand Alone Class
 ## Determines how an SNS notification is handled
 class SnsRecord:
-  def __init__(self, record):
-    self.record = record
-    self.region = os.environ.get('AWS_REGION', 'us-east-1')
-    self.topic_arn = record['TopicArn']
-    self.topic_name = record['TopicArn'].split(':')[-1]
-    self.severity = SeverityLevel(self.topic_name)
-    print(f'Region = {self.region}')
-    print(f'TopicArn = {self.topic_arn}')
-    print(f'TopicName = {self.topic_name}')
-    print(f'Level = {self.severity.level}')
-    print(f'Color = {self.severity.color}')
-    try:
-      self.message = json.loads(record['Message'])
-    except json.decoder.JSONDecodeError as e:
-      self.message = record['Message']
-    self.is_cloudwatch_alarm = (isinstance(self.message, dict) and 'AlarmArn' in self.message.keys())
-    print(f'IsCloudWatchAlarm = {self.is_cloudwatch_alarm}')
-    self.is_backup_job = (isinstance(self.record, dict)
-      and 'MessageAttributes' in self.record.keys()
-      and 'EventType' in self.record['MessageAttributes'].keys()
-      and self.record['MessageAttributes']['EventType']['Value'] == 'BACKUP_JOB')
-    print(f'IsBackupJob = {self.is_backup_job}')
+    def __init__(self, record):
+        self.record = record
+        self.region = os.environ.get('AWS_REGION', 'us-east-1')
+        self.topic_arn = record['TopicArn']
+        self.topic_name = record['TopicArn'].split(':')[-1]
+        self.severity = SeverityLevel(self.topic_name)
+        print(f'Region = {self.region}')
+        print(f'TopicArn = {self.topic_arn}')
+        print(f'TopicName = {self.topic_name}')
+        print(f'Level = {self.severity.level}')
+        print(f'Color = {self.severity.color}')
+        try:
+            self.message = json.loads(record['Message'])
+        except json.decoder.JSONDecodeError as e:
+            self.message = record['Message']
+        self.is_cloudwatch_alarm = (isinstance(self.message, dict) and 'AlarmArn' in self.message.keys())
+        print(f'IsCloudWatchAlarm = {self.is_cloudwatch_alarm}')
+        self.is_backup_job = (isinstance(self.record, dict)
+                              and 'MessageAttributes' in self.record.keys()
+                              and 'EventType' in self.record['MessageAttributes'].keys()
+                              and self.record['MessageAttributes']['EventType']['Value'] == 'BACKUP_JOB')
+        print(f'IsBackupJob = {self.is_backup_job}')
 
-  def change_severity(self, color):
-    self.severity = SeverityLevel(color)
+    def change_severity(self, color):
+        self.severity = SeverityLevel('red')
 
-  def alert(self):
-    teams = TeamsAlert(self)
-    return teams.alert()
+    def alert(self):
+        email_alert = EmailAlert(self)
+        return email_alert.alert()
 
 ##
 ## Lambda Handler
@@ -213,11 +223,10 @@ def lambda_handler(event, context):
 ## Unit Testing
 ## Used when testing from the local machine.
 if __name__ == "__main__":
-  if len(sys.argv) != 2:
-    print(f'Usage: python3 lambda_handler.py [file(json)]')
-    sys.exit(1)
+    if len(sys.argv) != 2:
+        print(f'Usage: python3 lambda_handler.py [file(json)]')
+        sys.exit(1)
 
-  with open(sys.argv[1], 'r') as f:
-    e = json.load(f)
-    lambda_handler(e, None)
-
+    with open(sys.argv[1], 'r') as f:
+        e = json.load(f)
+        lambda_handler(e, None)

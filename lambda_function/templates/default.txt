@@ -1,10 +1,12 @@
-$AlertType
+Alert Type: $AlertType
 
-Message:
-$Message
+Job Name: $JobName
 
-Event Type:
-$EventType
+Backup Plan: $BackupPlan
 
-Status:
-$Status
+Event Type: $EventType
+
+Status: $Status
+
+Event Time: $EventTime
+
