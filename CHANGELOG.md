@@ -2,18 +2,17 @@
 
 ## v10.0.0
 - ** MAJOR UPDATE **
-  - Module no longer supports color-based topics, such as Red, Green or Yellow. Only a single topic is deployed and the alarm name will be sent by email.
-  - Teams support has been removed.
-  - When deploying this module, please delete version v9.x or lower of the SNS Framework, before deploying version 10.x or above.
-  - Terraform version has been upgraded to 1.9.5.
-  - Added functionality for the module to create a zip file and pass it to the Lambda Function resource during resource creation.
-  - Arguments `EMAIL_TO` and `EMAIL_FROM` are now required.
-  - `EMAIL_TO` can contain a list of email addresses, or a single recipient.
-  - Email subject is alarm name.
-  - Email body includes alarm description with new line preservation; includes Metric Details such as Metric Name, Namespace, and Threshold.
-  - Event-Time is included in the Email body, with the Module converting ISO format time to 12-hour time displayed in EST.
-  - Ensured the alarm link provided in the email is functional, correcting an issue previously of the link not working.
-
+  - Support for MS Teams has been deprecated.
+  - Support for color-based SNS topics has been deprecated.
+  - The module will only provision a single SNS topic and the SRE will be responsible for categorizing severity in their Alarms names.
+  - The TEXT/HTML templates have been updated offering a bit more detail about the Alarm that was triggered.
+  - If the SRE is logged into the AWS account a URL is provided in the email directly to the Alarm.
+  - The Email now provides the Date/Time in which the Alarm was triggered in EDT though we plan to make this conversion configurable in the future.
+  - The variables `EMAIL_TO` and `EMAIL_FROM` are now required.
+  - The variable `EMAIL_TO` now supports a comma-separated list of email addresses.
+  - If the SRE has deployed v9.x or lower please decommission the module before deploying v10.x and above.
+  - `~> 1.9` is now the minimal required Terraform version.
+  - `~> 5.0` is now the minimal required AWS provider version.
 
 ## v9.0.0
 - ** UPDATE **

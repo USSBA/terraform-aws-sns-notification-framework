@@ -2,36 +2,33 @@
 
 ## Description
 
-This module will send an email to a recipient or a list of recipients when a Cloudwatch Alarm changes state. It will provision an SNS topic and Lambda Function for SNS alerts. A Lambda Function will be provisioned and subscribed to the SNS topic to handle the alarm notifications and relay them to the appropriate list of email recipients. If configured, this module will use SES to notify email recipients.
+This module requires the use of AWS Simple Email Service (SES) to send it's notifications.
 
-### Topic Delegation
+## Support
 
-A single topic is used for general purpose information, warnings, critical application and infrastructure information.
+The following list of AWS services are supported:
+- CloudWatch Alarms
 
-#### Supported AWS Services
-
-At present, the only supported service is Cloudwatch Alarms, but in the future, we intend to expand to other types of services such as AWS Backup Vault.
-
-#### Email
-
-The Cloudwatch Alarm title and description will be in the email subject and body. The alarm state, event time and a link to the alarm will be provided in the email. Metric details will show information about the MetricName, Threshold and Namespace for the alarm.
+**Note:** We do plan to support other AWS services such as Backup Vault in the future.
 
 ## Usage
 
+**Important**
+- If your SES is currently in sandbox then all email identities must be verified.
+- If your SES is no longer in sandbox then only the sender's email address or the sender's domain must be verified identities.
+
+After deploying this module to the AWS account the SRE will need to create or adjust their CloudWatch Alarm configuration. The Alarm's `alarm_action` and/or `ok_action` should point at the SNS topic provisioned by this module.
+
 ### Module Inputs
 
-| Variable                      | Description                                                             |
-| :-                            | :-                                                                      |
-| *email_from*                  | **Optional;** Email address of the sender.                              |
-| *email_to*                    | **Optional;** Email address or a list of recipients.                    |
-| *encrypted*                   | **Optional;** Topics will be encrypted at rest using a KMS managed key. |
-| *kms_key_alias*               | **Optional;** Required when _encrypted_ is turned on.                   |
-| *log_group_retention_in_days* | **Optional;** Number of days applied to the log group retention policy. |
-| *name_prefix*                 | **Required;** Unique name prefix used to label resources.               |
-
-> <br/>**Considering Email Alerts?** <br/><br/>
-> Please note that if you choose to configure the `email_from` and `email_to` that you may be subject to additional SES configuration. For instance both addresses (and list of addresses if more than one) will need to be verified or at the very least the senders domain. You may also need to place a service request with AWS to lift SES out of its default `sandbox` configuration.<br/><br/>
-
+| Variable                      | Description                                                                           |
+| :-                            | :-                                                                                    |
+| *email_from*                  | **Required;** The designated email address used as the sender of email notifications. |
+| *email_to*                    | **Required;** The designated list of recipient email address of email notifications.  |
+| *encrypted*                   | **Optional;** Topics will be encrypted at rest using a KMS managed key.               |
+| *kms_key_alias*               | **Optional;** Required when _encrypted_ is turned on.                                 |
+| *log_group_retention_in_days* | **Optional;** Number of days applied to the log group retention policy.               |
+| *name_prefix*                 | **Required;** Unique name prefix used to label resources.                             |
 
 ## Contributing
 
