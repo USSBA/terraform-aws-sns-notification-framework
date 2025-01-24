@@ -2,7 +2,12 @@
 
 ## Description
 
-This module requires the use of AWS Simple Email Service (SES) to send it's notifications.
+The purpose of this module is to provide a quick and easy way of translating CloudWatch Alarm's into Email Notifications.
+
+**Important**
+- This module requires the use of AWS Simple Email Service (SES) to send it's notifications.
+- If you have deployed v9.x or lower please be advised that the module should be decommissioned entirely before upgrading to v10.x or higher.
+- Please read our [CHANGELOG](./CHANGELOG.md) for more details.
 
 ## Support
 
