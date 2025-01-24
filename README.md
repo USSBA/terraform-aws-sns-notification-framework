@@ -2,57 +2,38 @@
 
 ## Description
 
-This module will provision 4 unique SNS topics and for the moment let us refer to them as `Green`, `Yellow`, `Red`, and `Security`. A Lambda Function will also be provisioned and subscribed to each of the 4 topics to handle the notifications and relay them to the appropriate Microsoft Teams Webhook. If configured this module will use SES to relay Red and Security notification respectively.
+The purpose of this module is to provide a quick and easy way of translating CloudWatch Alarm's into Email Notifications.
 
-### Topic Delegation
+**Important**
+- This module requires the use of AWS Simple Email Service (SES) to send it's notifications.
+- If you have deployed v9.x or lower please be advised that the module should be decommissioned entirely before upgrading to v10.x or higher.
+- Please read our [CHANGELOG](./CHANGELOG.md) for more details.
 
-**Green** - This topic is for general purpose information.
+## Support
 
-  * Automated build has started
-  * Automated build has completed
-  * Backup Job started
-  * Backup Job complete
-  * Alarm transition to OK state
+The following list of AWS services are supported:
+- CloudWatch Alarms
 
-**Yellow** - This topic is for warning/precursor information.
-
-  * CPU or Memory lower threshold is breaching
-  * CI/CD build failure
-  * Auto-Scaling Events
-  * Low EBS or RDS diskspace
-
-**Red** - This topic is used for critical application and infrastructure information.
-
-  * CPU or Memory upper threshold is breaching
-  * CI/CD deployment failure
-  * Healthcheck failures
-
-**Security** - This topic is used for CISO/SOC related information.
-
-  * CVE has been detected
-  * Unauthorized access has been detected
-  * Credential reports
-  * Out-of-date Package has been detected
+**Note:** We do plan to support other AWS services such as Backup Vault in the future.
 
 ## Usage
 
+**Important**
+- If your SES is currently in sandbox then all email identities must be verified.
+- If your SES is no longer in sandbox then only the sender's email address or the sender's domain must be verified identities.
+
+After deploying this module to the AWS account the SRE will need to create or adjust their CloudWatch Alarm configuration. The Alarm's `alarm_action` and/or `ok_action` should point at the SNS topic provisioned by this module.
+
 ### Module Inputs
 
-| Variable                      | Description                                                             |
-| :-                            | :-                                                                      |
-| *email_from*                  | **Optional;** Email address of the sender.                              |
-| *email_to*                    | **Optional;** Email address of the reciever.                            |
-| *encrypted*                   | **Optional;** Topics will be encrypted at rest using a KMS managed key. |
-| *kms_key_alias*               | **Optional;** Required when _encrypted_ is turned on.                   |
-| *log_group_retention_in_days* | **Optional;** Number of days applied to the log group retention policy. |
-| *name_prefix*                 | **Required;** Unique name prefix used to label resources.               |
-| *webhook_url_green*           | **Required;** MS Teams WebHook URI for Green Alerts.                    |
-| *webhook_url_red*             | **Required;** MS Teams WebHook URL for Red Alerts.                      |
-| *webhook_url_security*        | **Required;** MS Teams WebHook URL for Security Alerts.                 |
-| *webhook_url_yellow*          | **Required;** MS Teams WebHook URL for Yellow Alerts.                   |
-
-> <br/>**Considering Email Alerts?** <br/><br/>
-> Please note that if you choose to configure the `email_from` and `email_to` that you may be subject to additional SES configuration. For instance both addresses will need to be verified or at the very least the senders domain. You may also need to place a service request with AWS to lift SES out of its default `sandbox` configuration.<br/><br/>
+| Variable                      | Description                                                                           |
+| :-                            | :-                                                                                    |
+| *email_from*                  | **Required;** The designated email address used as the sender of email notifications. |
+| *email_to*                    | **Required;** The designated list of recipient email address of email notifications.  |
+| *encrypted*                   | **Optional;** Topics will be encrypted at rest using a KMS managed key.               |
+| *kms_key_alias*               | **Optional;** Required when _encrypted_ is turned on.                                 |
+| *log_group_retention_in_days* | **Optional;** Number of days applied to the log group retention policy.               |
+| *name_prefix*                 | **Required;** Unique name prefix used to label resources.                             |
 
 ## Contributing
 

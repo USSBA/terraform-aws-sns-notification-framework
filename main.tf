@@ -10,33 +10,13 @@ variable "name_prefix" {
   type        = string
   description = "Required, A short and unique name prefix used to label resources."
 }
-variable "webhook_url_green" {
-  type        = string
-  description = "Required, A Microsoft Teams WebHook URI."
-}
-variable "webhook_url_yellow" {
-  type        = string
-  description = "Required, A Microsoft Teams WebHook URI."
-}
-variable "webhook_url_red" {
-  type        = string
-  description = "Required, A Microsoft Teams WebHook URI."
-}
-variable "webhook_url_security" {
-  type        = string
-  description = "Required, A Microsoft Teams WebHook URI."
-}
-
-# optional
 variable "email_from" {
   type        = string
-  description = "Optional, An email address representing the sender."
-  default     = "undefined"
+  description = "Required, An email address representing the sender."
 }
 variable "email_to" {
   type        = string
-  description = "Optional, An email address representing the recipient."
-  default     = "undefined"
+  description = "Required, a comma-seperated list of email addresses representing the recipients."
 }
 variable "log_group_retention_in_days" {
   type        = number
@@ -58,8 +38,8 @@ variable "kms_key_alias" {
 # MODULE OUTPUT VARIABLES
 #--------------------------------------------------
 
-output "topics" {
-  value = aws_sns_topic.topics
+output "topic" {
+  value = aws_sns_topic.topic
 }
 output "iam_role" {
   value = aws_iam_role.lambda
@@ -75,21 +55,19 @@ output "lambda_function" {
 # MODULE SETTINGS: STATIC
 #--------------------------------------------------
 
-locals {
-  topic_colors = ["green", "yellow", "red", "security"]
-}
+#locals {
+#  topic_colors = ["red"]
+#}
 
 #--------------------------------------------------
 # TOPIC CONFIG
 #--------------------------------------------------
-resource "aws_sns_topic" "topics" {
-  count             = length(local.topic_colors)
-  name              = "${var.name_prefix}-teams-${local.topic_colors[count.index]}-notifications"
+resource "aws_sns_topic" "topic" {
+  name              = "${var.name_prefix}-email-notifications"
   kms_master_key_id = try(var.encrypted ? aws_kms_key.key[0].arn : null, null)
 }
 
 data "aws_iam_policy_document" "topic_policy" {
-  count = length(local.topic_colors)
   statement {
     sid = "aws-cloudwatch"
     actions = [
@@ -102,7 +80,7 @@ data "aws_iam_policy_document" "topic_policy" {
       ]
     }
     resources = [
-      aws_sns_topic.topics[count.index].arn
+      aws_sns_topic.topic.arn
     ]
   }
   statement {
@@ -118,15 +96,14 @@ data "aws_iam_policy_document" "topic_policy" {
       ]
     }
     resources = [
-      aws_sns_topic.topics[count.index].arn
+      aws_sns_topic.topic.arn
     ]
   }
 }
 
 resource "aws_sns_topic_policy" "topic_policy" {
-  count  = length(local.topic_colors)
-  arn    = aws_sns_topic.topics[count.index].arn
-  policy = data.aws_iam_policy_document.topic_policy[count.index].json
+  arn    = aws_sns_topic.topic.arn
+  policy = data.aws_iam_policy_document.topic_policy.json
 }
 
 #--------------------------------------------------
@@ -160,48 +137,28 @@ data "aws_iam_policy_document" "lambda" {
 
 # role assigned to the lambda function incorporating both the service linked principals and a custom set of permissions
 resource "aws_iam_role" "lambda" {
-  name               = "${var.name_prefix}-teams-notifications"
+  name               = "${var.name_prefix}-sns-framework"
   assume_role_policy = data.aws_iam_policy_document.lambda_principal.json
-  managed_policy_arns = [
+}
+
+resource "aws_iam_role_policy_attachments_exclusive" "lambda" {
+  role_name = aws_iam_role.lambda.name
+  policy_arns = [
     "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
   ]
-  inline_policy {
-    name   = "execution"
-    policy = data.aws_iam_policy_document.lambda.json
-  }
 }
 
-resource "random_uuid" "source_hash" {
-  keepers = {
-    sha = join(",", [
-      filebase64sha256("${path.module}/lambda_function/handler.py"),
-      filebase64sha256("${path.module}/lambda_function/templates/cloudwatch.json"),
-      filebase64sha256("${path.module}/lambda_function/templates/cloudwatch.txt"),
-      filebase64sha256("${path.module}/lambda_function/templates/cloudwatch.html"),
-      filebase64sha256("${path.module}/lambda_function/templates/default.json"),
-      filebase64sha256("${path.module}/lambda_function/templates/default.txt"),
-      filebase64sha256("${path.module}/lambda_function/templates/default.html"),
-    ]),
-    args = nonsensitive(base64encode(join(",", [
-      var.name_prefix,
-      var.webhook_url_green,
-      var.webhook_url_yellow,
-      var.webhook_url_red,
-      var.webhook_url_security,
-      var.email_from,
-      var.email_to,
-    ])))
-  }
+resource "aws_iam_role_policy" "lambda" {
+  name   = "${var.name_prefix}-sns-framework"
+  role   = aws_iam_role.lambda.id
+  policy = data.aws_iam_policy_document.lambda.json
 }
 
-# only trigger when the contents of a file within the package is changed
-resource "null_resource" "zip" {
-  triggers = {
-    uuid = random_uuid.source_hash.result
-  }
-  provisioner "local-exec" {
-    command = "([ -f ${path.module}/${random_uuid.source_hash.result}.zip ] && rm ${path.module}/${random_uuid.source_hash.result}.zip); cd ${path.module}/lambda_function/ && zip ../${random_uuid.source_hash.result}.zip handler.py templates/cloudwatch.json templates/cloudwatch.txt templates/cloudwatch.html templates/default.json templates/default.txt templates/default.html && cd .."
-  }
+resource "aws_iam_role_policies_exclusive" "lambda" {
+  role_name = aws_iam_role.lambda.name
+  policy_names = [
+    aws_iam_role_policy.lambda.name
+  ]
 }
 
 resource "aws_cloudwatch_log_group" "lambda" {
@@ -210,12 +167,12 @@ resource "aws_cloudwatch_log_group" "lambda" {
 }
 
 resource "aws_lambda_function" "lambda" {
-  depends_on = [random_uuid.source_hash, null_resource.zip, aws_cloudwatch_log_group.lambda]
+  depends_on = [aws_cloudwatch_log_group.lambda]
 
   function_name = aws_iam_role.lambda.name
-  description   = "Forward notifications to Microsoft Teams"
+  description   = "Forward notifications to email addresses."
   role          = aws_iam_role.lambda.arn
-  filename      = "${path.module}/${random_uuid.source_hash.result}.zip"
+  filename      = "${path.module}/function.zip"
   handler       = "handler.lambda_handler"
   memory_size   = 128 #MB
   timeout       = 10  #seconds
@@ -223,35 +180,33 @@ resource "aws_lambda_function" "lambda" {
 
   environment {
     variables = {
-      EMAIL_FROM             = var.email_from
-      EMAIL_TO               = var.email_to
-      TEAMS_WEBHOOK_GREEN    = var.webhook_url_green
-      TEAMS_WEBHOOK_YELLOW   = var.webhook_url_yellow
-      TEAMS_WEBHOOK_RED      = var.webhook_url_red
-      TEAMS_WEBHOOK_SECURITY = var.webhook_url_security
+      EMAIL_FROM = var.email_from
+      EMAIL_TO   = var.email_to
     }
   }
 }
 
 # allows the sns topic to invoke the lambda function when it needs to forward an alert
 resource "aws_lambda_permission" "lambda" {
-  count = length(local.topic_colors)
-
   action        = "lambda:InvokeFunction"
   principal     = "sns.amazonaws.com"
   function_name = aws_lambda_function.lambda.function_name
-  source_arn    = aws_sns_topic.topics[count.index].arn
+  source_arn    = aws_sns_topic.topic.arn
 }
 
 #subscribe each of the topics to the lamdba function
 resource "aws_sns_topic_subscription" "lambda" {
-  count = length(local.topic_colors)
-
   protocol  = "lambda"
   endpoint  = aws_lambda_function.lambda.arn
-  topic_arn = aws_sns_topic.topics[count.index].arn
+  topic_arn = aws_sns_topic.topic.arn
 }
 
+
+resource "archive_file" "init" {
+  type        = "zip"
+  source_dir  = "${path.module}/lambda_function/"
+  output_path = "${path.module}/function.zip"
+}
 #--------------------------------------------------
 # KMS CONFIG
 #--------------------------------------------------
@@ -322,4 +277,3 @@ data "aws_iam_policy_document" "key" {
     resources = ["*"]
   }
 }
-

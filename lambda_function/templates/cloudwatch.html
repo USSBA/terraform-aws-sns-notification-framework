@@ -1,15 +1,21 @@
 <html>
-  <head>
+<head>
     <title>CloudWatch Alarm</title>
-  </head>
-  <body>
-    <h3>Alarm Name</h3>
-    <p>$AlarmName</p>
-    <h3>Description</h3>
-    <p>$AlarmDescription</p>
-    <h3>State</h3>
-    <p>$NewStateValue</p>
-    <h3>Link to Alarm in CloudWatch</h3>
-    <p><a href="$PageLink">$PageLink</a></p>
-  </body>
+</head>
+<body>
+    <h3>CloudWatch Alarm - $AlarmName</h3>
+    <p><strong>Description:</strong></p>
+    <pre>$AlarmDescription</pre>
+    <p><strong>State:</strong> $NewStateValue</p>
+    <p><strong>Event Time:</strong> $EventTime</p>
+
+    <h4>Metric Details:</h4>
+    <ul>
+        <li><strong>Metric Name:</strong> $MetricName</li>
+        <li><strong>Namespace:</strong> $Namespace</li>
+        <li><strong>Threshold:</strong> $Threshold</li>
+    </ul>
+
+    <p>Link to Alarm in CloudWatch: <a href="$PageLink">View Alarm</a></p>
+</body>
 </html>

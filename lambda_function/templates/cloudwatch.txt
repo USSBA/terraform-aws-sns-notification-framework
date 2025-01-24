@@ -3,8 +3,14 @@ CloudWatch Alarm - $AlarmName
 Description:
 $AlarmDescription
 
-State:
-$NewStateValue
+State: $NewStateValue
+
+Event Time: $EventTime
+
+Metric Details:
+- Metric Name: $MetricName
+- Namespace: $Namespace
+- Threshold: $Threshold
 
 Link to Alarm in CloudWatch:
 $PageLink

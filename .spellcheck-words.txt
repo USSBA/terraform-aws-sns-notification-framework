@@ -2,6 +2,7 @@ affirmer
 arns
 aws
 bugfix
+changelog
 ciso
 cloudwatch
 cve
@@ -13,6 +14,7 @@ kms
 reciever
 ses
 sns
+sre
 submodule
 terraform
 tf

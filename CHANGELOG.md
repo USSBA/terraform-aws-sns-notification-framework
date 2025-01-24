@@ -1,5 +1,19 @@
 # Releases
 
+## v10.0.0
+- ** MAJOR UPDATE **
+  - Support for MS Teams has been deprecated.
+  - Support for color-based SNS topics has been deprecated.
+  - The module will only provision a single SNS topic and the SRE will be responsible for categorizing severity in their Alarms names.
+  - The TEXT/HTML templates have been updated offering a bit more detail about the Alarm that was triggered.
+  - If the SRE is logged into the AWS account a URL is provided in the email directly to the Alarm.
+  - The Email now provides the Date/Time in which the Alarm was triggered in EDT though we plan to make this conversion configurable in the future.
+  - The variables `EMAIL_TO` and `EMAIL_FROM` are now required.
+  - The variable `EMAIL_TO` now supports a comma-separated list of email addresses.
+  - If the SRE has deployed v9.x or lower please decommission the module before deploying v10.x and above.
+  - `~> 1.9` is now the minimal required Terraform version.
+  - `~> 5.0` is now the minimal required AWS provider version.
+
 ## v9.0.0
 - ** UPDATE **
   - Module no longer supports variable *kms_managed_key_id* and instead offers variable *kms_key_alias* when the variable *encrypted* is *true*.
