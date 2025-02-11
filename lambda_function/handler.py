@@ -1,7 +1,7 @@
 from email.message import EmailMessage
 from string import Template
 from datetime import datetime
-import pytz
+from dateutil import tz
 import boto3, json, os, sys
 import smtplib, urllib, ssl
 
@@ -15,7 +15,7 @@ import smtplib, urllib, ssl
 def format_event_time(time):
     try:
         input_datetime = datetime.strptime(time, "%Y-%m-%dT%H:%M:%S.%f%z")
-        est = pytz.timezone('US/Eastern')
+        est = tz.gettz('US/Eastern')
         input_datetime_est = input_datetime.astimezone(est)
         output_str = input_datetime_est.strftime("%A, %B %d, %Y %I:%M:%S %p EDT")
         return output_str
