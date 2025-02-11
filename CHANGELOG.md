@@ -1,7 +1,11 @@
 # Releases
 
+## v10.0.1
+- **FIX**
+  - The python code for the Lambda Function has been updated to remove *pytz* and instead utilizes *dateutil* module for timezone conversion.
+
 ## v10.0.0
-- ** MAJOR UPDATE **
+- **MAJOR UPDATE**
   - Support for MS Teams has been deprecated.
   - Support for color-based SNS topics has been deprecated.
   - The module will only provision a single SNS topic and the SRE will be responsible for categorizing severity in their Alarms names.
@@ -15,7 +19,7 @@
   - `~> 5.0` is now the minimal required AWS provider version.
 
 ## v9.0.0
-- ** UPDATE **
+- **UPDATE**
   - Module no longer supports variable *kms_managed_key_id* and instead offers variable *kms_key_alias* when the variable *encrypted* is *true*.
   - Module will now create a KMS managed key with the provided *kms_key_alias* and the appropriate key policy to allow CloudWatch Alarms to send
     notifications when SNS Topics are *encrypted* at rest.
